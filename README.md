@@ -16,4 +16,4 @@ Flutter mobile app for real-time sign language translation.
 4. Run on device: `flutter run`
 
 ## Backend
-API: [signverse-api](https://github.com/YOUR_USERNAME/signverse-api)
+API: [signverse-api](https://github.com/Shawarma-Frikz/signverse-api)
