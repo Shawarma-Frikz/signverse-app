@@ -1,6 +1,6 @@
 name: signverse
 description: "Real-time ASL translation application."
-publish_to: 'none' 
+publish_to: 'none'
 version: 1.0.0+1
 
 environment:
@@ -30,6 +30,9 @@ dependencies:
   # Text to speech
   flutter_tts: ^4.0.2
 
+  # Fonts
+  google_fonts: ^6.2.1
+
   # Icons
   cupertino_icons: ^1.0.6
 
@@ -42,7 +45,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  
+
   assets:
     - assets/images/
     - assets/fonts/
