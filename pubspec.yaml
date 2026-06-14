@@ -23,7 +23,7 @@ dependencies:
   # Secure token storage
   flutter_secure_storage: ^9.0.0
 
-  #Local preferences
+  # Local preferences
   shared_preferences: ^2.2.3
 
   # Camera & ML
@@ -40,6 +40,7 @@ dependencies:
   smooth_page_indicator: ^1.1.0
   animated_text_kit: ^4.2.2
   lottie: ^3.1.0
+  flutter_animate: ^4.5.0
 
   # Icons
   cupertino_icons: ^1.0.6
