@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/splash/screens/splash_screen.dart';
+import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/translation/screens/translation_screen.dart';
 import '../../features/history/screens/history_screen.dart';
@@ -11,16 +13,33 @@ class AppRouter {
   AppRouter._();
 
   static final GoRouter router = GoRouter(
-    initialLocation: '/home',
+    initialLocation: '/splash',
     debugLogDiagnostics: true,
     routes: [
+      // Splash
+      GoRoute(
+        path: '/splash',
+        pageBuilder: (context, state) =>
+            const NoTransitionPage(child: SplashScreen()),
+      ),
+
+      // Onboarding
+      GoRoute(
+        path: '/onboarding',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          child: const OnboardingScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        ),
+      ),
+
       // Main shell with bottom navigation
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return AppShell(navigationShell: navigationShell);
         },
         branches: [
-          // Tab 0 — Home
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -30,8 +49,6 @@ class AppRouter {
               ),
             ],
           ),
-
-          // Tab 1 — Translation (center)
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -41,8 +58,6 @@ class AppRouter {
               ),
             ],
           ),
-
-          // Tab 2 — History
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -52,8 +67,6 @@ class AppRouter {
               ),
             ],
           ),
-
-          // Tab 3 — Learning
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -63,8 +76,6 @@ class AppRouter {
               ),
             ],
           ),
-
-          // Tab 4 — Settings
           StatefulShellBranch(
             routes: [
               GoRoute(
