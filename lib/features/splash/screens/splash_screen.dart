@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import 'dart:math' as math;
+import '../../../core/services/preferences_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -100,8 +101,17 @@ class _SplashScreenState extends State<SplashScreen>
     await _textController.forward();
     await Future.delayed(const Duration(milliseconds: 1500));
 
-    if (mounted) {
-      context.go('/onboarding');
+    if (!mounted) return;
+
+    // Check if onboarding has been completed before
+    final onboardingDone = await PreferencesService.isOnboardingComplete();
+
+    if (!mounted) return;
+
+    if (onboardingDone) {
+      context.go('/home'); // returning user — skip onboarding
+    } else {
+      context.go('/onboarding'); // first time — show onboarding
     }
   }
 
