@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/services/preferences_service.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -55,18 +56,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  void _nextPage() {
+  void _nextPage() async {
     if (_currentPage < _pages.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
     } else {
-      context.go('/home');
+      await PreferencesService.setOnboardingComplete();
+      if (mounted) context.go('/home');
     }
   }
 
-  void _skip() => context.go('/home');
+  void _skip() async {
+    await PreferencesService.setOnboardingComplete();
+    if (mounted) context.go('/home');
+  }
 
   @override
   Widget build(BuildContext context) {
