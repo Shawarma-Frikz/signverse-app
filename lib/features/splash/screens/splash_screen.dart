@@ -109,9 +109,9 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
 
     if (onboardingDone) {
-      context.go('/home'); // returning user — skip onboarding
+      context.go('/login'); // ← change to /home once auth is wired
     } else {
-      context.go('/onboarding'); // first time — show onboarding
+      context.go('/onboarding');
     }
   }
 
