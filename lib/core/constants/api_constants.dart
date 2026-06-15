@@ -1,6 +1,6 @@
 class ApiConstants {
   static const String baseUrl =
-      'https://your-railway-url.up.railway.app/api/v1';
+      'https://signverse-api-production.up.railway.app/api/v1';
 
   // Auth endpoints
   static const String register = '/auth/register';

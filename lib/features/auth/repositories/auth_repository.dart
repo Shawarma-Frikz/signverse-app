@@ -65,9 +65,25 @@ class AuthRepository {
   // ── Error handler ──────────────────────────────────────────────
   AuthException _handleError(DioException e) {
     final statusCode = e.response?.statusCode;
-    final detail = e.response?.data?['detail'];
+    final data = e.response?.data;
 
-    if (detail is String) {
+    print('=== AUTH ERROR DEBUG ===');
+    print('Status code: ${e.response?.statusCode}');
+    print('Data: ${e.response?.data}');
+    print('Data type: ${e.response?.data?.runtimeType}');
+    print('DioException type: ${e.type}');
+    print('Message: ${e.message}');
+    print('========================');
+
+    // Extract detail message safely
+    String? detail;
+    if (data is Map) {
+      final raw = data['detail'];
+      if (raw is String) detail = raw;
+      if (raw is List && raw.isNotEmpty) detail = raw.first.toString();
+    }
+
+    if (detail != null) {
       return AuthException(detail, statusCode: statusCode);
     }
 
