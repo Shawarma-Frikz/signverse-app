@@ -10,16 +10,16 @@ void main() {
   runApp(const ProviderScope(child: SignVerseApp()));
 }
 
-class SignVerseApp extends StatelessWidget {
+class SignVerseApp extends ConsumerWidget {
   const SignVerseApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: 'SignVerse',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      routerConfig: AppRouter.router,
+      routerConfig: AppRouter.createRouter(ref),
     );
   }
 }

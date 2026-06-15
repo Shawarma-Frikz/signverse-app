@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/auth_button.dart';
 import '../widgets/auth_header.dart';
+import '../repositories/auth_repository.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoading = false;
   String? _errorMessage;
 
   @override
@@ -29,20 +31,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    setState(() => _errorMessage = null);
 
-    // TODO Sprint 5 — wire to ApiClient
-    await Future.delayed(const Duration(seconds: 1));
-
-    setState(() => _isLoading = false);
-    if (mounted) context.go('/home');
+    try {
+      await ref
+          .read(authProvider.notifier)
+          .login(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          );
+      if (mounted) context.go('/home');
+    } on AuthException catch (e) {
+      setState(() => _errorMessage = e.message);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authProvider).isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
@@ -197,7 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     AuthButton(
                           label: 'Sign In',
                           onPressed: _login,
-                          isLoading: _isLoading,
+                          isLoading: isLoading,
                           icon: Icons.login_rounded,
                         )
                         .animate()

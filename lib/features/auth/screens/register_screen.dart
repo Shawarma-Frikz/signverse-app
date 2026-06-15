@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/auth_button.dart';
 import '../widgets/auth_header.dart';
+import '../repositories/auth_repository.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
-  bool _isLoading = false;
   bool _agreedToTerms = false;
   String? _errorMessage;
 
@@ -38,35 +40,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
       setState(() => _errorMessage = 'Please agree to the terms to continue');
       return;
     }
+    setState(() => _errorMessage = null);
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    try {
+      await ref
+          .read(authProvider.notifier)
+          .register(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+            displayName: _nameController.text.trim(),
+          );
 
-    // TODO Sprint 5 — wire to ApiClient
-    await Future.delayed(const Duration(seconds: 1));
-
-    setState(() => _isLoading = false);
-    if (mounted) {
-      // Show success and go to verify email screen
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Account created! Check your email to verify.',
-            style: AppTextStyles.bodyMedium,
-          ),
-          backgroundColor: AppColors.success500,
-          behavior: SnackBarBehavior.floating,
-          shape: const RoundedRectangleBorder(borderRadius: AppRadius.lgBorder),
-        ),
-      );
-      context.go('/login');
+      // --- UPDATED NAVIGATION LOGIC ---
+      if (mounted) {
+        context.push('/verify-email', extra: _emailController.text.trim());
+      }
+    } on AuthException catch (e) {
+      setState(() => _errorMessage = e.message);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authProvider).isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
@@ -297,7 +294,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     AuthButton(
                       label: 'Create Account',
                       onPressed: _register,
-                      isLoading: _isLoading,
+                      isLoading: isLoading,
                       icon: Icons.person_add_rounded,
                     ).animate().fadeIn(delay: 350.ms, duration: 400.ms),
 

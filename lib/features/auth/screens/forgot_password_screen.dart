@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/auth_button.dart';
 import '../widgets/auth_header.dart';
+import '../repositories/auth_repository.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  bool _isLoading = false;
   bool _emailSent = false;
 
   @override
@@ -27,19 +30,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   Future<void> _sendResetEmail() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
 
-    // TODO Sprint 5 — wire to ApiClient
-    await Future.delayed(const Duration(seconds: 1));
-
-    setState(() {
-      _isLoading = false;
-      _emailSent = true;
-    });
+    try {
+      await ref
+          .read(authProvider.notifier)
+          .forgotPassword(_emailController.text.trim());
+      if (mounted) setState(() => _emailSent = true);
+    } on AuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message, style: AppTextStyles.bodyMedium),
+            backgroundColor: AppColors.error500,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authProvider).isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
@@ -65,7 +78,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.s6),
-              child: _emailSent ? _buildSuccessState() : _buildFormState(),
+              child: _emailSent
+                  ? _buildSuccessState()
+                  : _buildFormState(isLoading),
             ),
           ),
         ],
@@ -73,7 +88,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  Widget _buildFormState() {
+  Widget _buildFormState(bool isLoading) {
     return Form(
       key: _formKey,
       child: Column(
@@ -146,7 +161,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           AuthButton(
             label: 'Send Reset Link',
             onPressed: _sendResetEmail,
-            isLoading: _isLoading,
+            isLoading: isLoading,
             icon: Icons.send_rounded,
           ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
 
