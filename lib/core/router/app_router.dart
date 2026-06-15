@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/splash/screens/splash_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
@@ -11,123 +12,165 @@ import '../../shared/widgets/app_shell.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/auth/screens/forgot_password_screen.dart';
+import '../../features/auth/providers/auth_provider.dart';
+import '../../features/auth/screens/verify_email_screen.dart';
 
 class AppRouter {
   AppRouter._();
 
-  static final GoRouter router = GoRouter(
-    initialLocation: '/splash',
-    debugLogDiagnostics: true,
-    routes: [
-      // Splash
-      GoRoute(
-        path: '/splash',
-        pageBuilder: (context, state) =>
-            const NoTransitionPage(child: SplashScreen()),
-      ),
+  static GoRouter createRouter(WidgetRef ref) {
+    return GoRouter(
+      initialLocation: '/splash',
+      debugLogDiagnostics: true,
+      redirect: (context, state) {
+        final authState = ref.read(authProvider);
+        final isAuth = authState.status == AuthStatus.authenticated;
+        final isUnknown = authState.status == AuthStatus.unknown;
 
-      // Onboarding
-      GoRoute(
-        path: '/onboarding',
-        pageBuilder: (context, state) => CustomTransitionPage(
-          child: const OnboardingScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
+        final isOnAuthRoute =
+            state.matchedLocation == '/login' ||
+            state.matchedLocation == '/register' ||
+            state.matchedLocation == '/forgot-password' ||
+            state.matchedLocation == '/splash' ||
+            state.matchedLocation == '/onboarding';
+
+        // Still checking auth — stay on splash
+        if (isUnknown) return '/splash';
+
+        // Not logged in and trying to access protected route
+        if (!isAuth && !isOnAuthRoute) return '/login';
+
+        // Logged in and trying to access auth routes
+        if (isAuth && isOnAuthRoute && state.matchedLocation != '/splash')
+          return '/home';
+
+        return null;
+      },
+      routes: [
+        // Splash
+        GoRoute(
+          path: '/splash',
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: SplashScreen()),
+        ),
+
+        // Onboarding
+        GoRoute(
+          path: '/onboarding',
+          pageBuilder: (context, state) => CustomTransitionPage(
+            child: const OnboardingScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+          ),
+        ),
+
+        GoRoute(
+          path: '/login',
+          pageBuilder: (context, state) => CustomTransitionPage(
+            child: const LoginScreen(),
+            transitionsBuilder: (context, animation, secondary, child) =>
+                FadeTransition(opacity: animation, child: child),
+          ),
+        ),
+
+        GoRoute(
+          path: '/register',
+          pageBuilder: (context, state) => CustomTransitionPage(
+            child: const RegisterScreen(),
+            transitionsBuilder: (context, animation, secondary, child) =>
+                SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                ),
+          ),
+        ),
+
+        GoRoute(
+          path: '/forgot-password',
+          pageBuilder: (context, state) => CustomTransitionPage(
+            child: const ForgotPasswordScreen(),
+            transitionsBuilder: (context, animation, secondary, child) =>
+                SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                ),
+          ),
+        ),
+
+        GoRoute(
+          path: '/verify-email',
+          pageBuilder: (context, state) {
+            final email = state.extra as String? ?? '';
+            return CustomTransitionPage(
+              child: VerifyEmailScreen(email: email),
+              transitionsBuilder: (context, animation, secondary, child) =>
+                  FadeTransition(opacity: animation, child: child),
+            );
           },
         ),
-      ),
-      GoRoute(
-        path: '/login',
-        pageBuilder: (context, state) => CustomTransitionPage(
-          child: const LoginScreen(),
-          transitionsBuilder: (context, animation, secondary, child) =>
-              FadeTransition(opacity: animation, child: child),
-        ),
-      ),
 
-      GoRoute(
-        path: '/register',
-        pageBuilder: (context, state) => CustomTransitionPage(
-          child: const RegisterScreen(),
-          transitionsBuilder: (context, animation, secondary, child) =>
-              SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(1, 0),
-                  end: Offset.zero,
-                ).animate(animation),
-                child: child,
-              ),
+        // Main shell with bottom navigation
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) {
+            return AppShell(navigationShell: navigationShell);
+          },
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/home',
+                  pageBuilder: (context, state) =>
+                      const NoTransitionPage(child: HomeScreen()),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/translate',
+                  pageBuilder: (context, state) =>
+                      const NoTransitionPage(child: TranslationScreen()),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/history',
+                  pageBuilder: (context, state) =>
+                      const NoTransitionPage(child: HistoryScreen()),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/learn',
+                  pageBuilder: (context, state) =>
+                      const NoTransitionPage(child: LearningScreen()),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/settings',
+                  pageBuilder: (context, state) =>
+                      const NoTransitionPage(child: SettingsScreen()),
+                ),
+              ],
+            ),
+          ],
         ),
-      ),
-
-      GoRoute(
-        path: '/forgot-password',
-        pageBuilder: (context, state) => CustomTransitionPage(
-          child: const ForgotPasswordScreen(),
-          transitionsBuilder: (context, animation, secondary, child) =>
-              SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(1, 0),
-                  end: Offset.zero,
-                ).animate(animation),
-                child: child,
-              ),
-        ),
-      ),
-
-      // Main shell with bottom navigation
-      StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) {
-          return AppShell(navigationShell: navigationShell);
-        },
-        branches: [
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/home',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: HomeScreen()),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/translate',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: TranslationScreen()),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/history',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: HistoryScreen()),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/learn',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: LearningScreen()),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/settings',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: SettingsScreen()),
-              ),
-            ],
-          ),
-        ],
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }
