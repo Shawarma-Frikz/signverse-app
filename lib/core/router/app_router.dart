@@ -14,6 +14,7 @@ import '../../features/auth/screens/register_screen.dart';
 import '../../features/auth/screens/forgot_password_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/verify_email_screen.dart';
+import '../../features/settings/screens/profile_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -115,6 +116,26 @@ class AppRouter {
                   FadeTransition(opacity: animation, child: child),
             );
           },
+        ),
+        GoRoute(
+          path: '/profile',
+          pageBuilder: (context, state) => CustomTransitionPage(
+            child: const ProfileScreen(),
+            transitionsBuilder: (context, animation, secondary, child) =>
+                SlideTransition(
+                  position:
+                      Tween<Offset>(
+                        begin: const Offset(0, 1),
+                        end: Offset.zero,
+                      ).animate(
+                        CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        ),
+                      ),
+                  child: child,
+                ),
+          ),
         ),
 
         // Main shell with bottom navigation
