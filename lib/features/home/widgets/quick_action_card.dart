@@ -63,7 +63,9 @@ class _QuickActionCardState extends State<QuickActionCard>
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: AppRadius.xlBorder,
-            border: Border.all(color: AppColors.primary400.withOpacity(0.2)),
+            border: Border.all(
+              color: AppColors.primary400.withValues(alpha: 0.2),
+            ),
           ),
           child: Row(
             children: [
@@ -95,7 +97,7 @@ class _QuickActionCardState extends State<QuickActionCard>
                   ],
                 ),
               ),
-              Icon(
+              const Icon(
                 Icons.arrow_forward_ios_rounded,
                 color: AppColors.primary300,
                 size: 12,

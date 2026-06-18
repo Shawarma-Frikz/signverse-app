@@ -119,7 +119,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.accent500.withOpacity(0.07),
+                    AppColors.accent500.withValues(alpha: 0.07),
                     Colors.transparent,
                   ],
                 ),
@@ -253,8 +253,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.accent500.withOpacity(
-                              0.2 + _avatarController.value * 0.15,
+                            color: AppColors.accent500.withValues(
+                              alpha: 0.2 + _avatarController.value * 0.15,
                             ),
                             blurRadius: 30 + _avatarController.value * 20,
                             spreadRadius: 0,
@@ -271,7 +271,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       shape: BoxShape.circle,
                       gradient: AppGradients.accent,
                       border: Border.all(
-                        color: AppColors.accent500.withOpacity(0.4),
+                        color: AppColors.accent500.withValues(alpha: 0.4),
                         width: 3,
                       ),
                     ),
@@ -358,13 +358,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   ),
                   decoration: BoxDecoration(
                     color: profile.isVerified
-                        ? AppColors.success500.withOpacity(0.1)
-                        : AppColors.warning500.withOpacity(0.1),
+                        ? AppColors.success500.withValues(alpha: 0.1)
+                        : AppColors.warning500.withValues(alpha: 0.1),
                     borderRadius: AppRadius.fullBorder,
                     border: Border.all(
                       color: profile.isVerified
-                          ? AppColors.success500.withOpacity(0.3)
-                          : AppColors.warning500.withOpacity(0.3),
+                          ? AppColors.success500.withValues(alpha: 0.3)
+                          : AppColors.warning500.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(
@@ -513,7 +513,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         vertical: AppSpacing.s4,
                       ),
                       side: BorderSide(
-                        color: AppColors.error400.withOpacity(0.4),
+                        color: AppColors.error400.withValues(alpha: 0.4),
                       ),
                       shape: const RoundedRectangleBorder(
                         borderRadius: AppRadius.lgBorder,
@@ -566,7 +566,7 @@ class _InfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.xlBorder,
-        border: Border.all(color: AppColors.primary400.withOpacity(0.2)),
+        border: Border.all(color: AppColors.primary400.withValues(alpha: 0.2)),
       ),
       child: Column(children: items),
     );
@@ -600,7 +600,7 @@ class _InfoItem extends StatelessWidget {
               Container(
                 width: 36,
                 height: 36,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.surfaceVariant,
                   borderRadius: AppRadius.mdBorder,
                 ),
@@ -626,7 +626,7 @@ class _InfoItem extends StatelessWidget {
         if (!isLast)
           Divider(
             height: 1,
-            color: AppColors.primary400.withOpacity(0.2),
+            color: AppColors.primary400.withValues(alpha: 0.2),
             indent: AppSpacing.s4,
             endIndent: AppSpacing.s4,
           ),
@@ -646,7 +646,7 @@ class _ActionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.xlBorder,
-        border: Border.all(color: AppColors.primary400.withOpacity(0.2)),
+        border: Border.all(color: AppColors.primary400.withValues(alpha: 0.2)),
       ),
       child: Column(children: items),
     );
@@ -694,7 +694,7 @@ class _ActionItem extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: AppRadius.mdBorder,
                   ),
                   child: Icon(icon, color: color, size: 18),
@@ -718,7 +718,7 @@ class _ActionItem extends StatelessWidget {
         if (!isLast)
           Divider(
             height: 1,
-            color: AppColors.primary400.withOpacity(0.2),
+            color: AppColors.primary400.withValues(alpha: 0.2),
             indent: AppSpacing.s4,
             endIndent: AppSpacing.s4,
           ),
@@ -743,9 +743,11 @@ class _LogoutDialog extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: AppColors.error500.withOpacity(0.1),
+                color: AppColors.error500.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.error500.withOpacity(0.3)),
+                border: Border.all(
+                  color: AppColors.error500.withValues(alpha: 0.3),
+                ),
               ),
               child: const Icon(
                 Icons.logout_rounded,
@@ -774,7 +776,7 @@ class _LogoutDialog extends StatelessWidget {
                         vertical: AppSpacing.s3,
                       ),
                       side: BorderSide(
-                        color: AppColors.primary400.withOpacity(0.4),
+                        color: AppColors.primary400.withValues(alpha: 0.4),
                       ),
                       shape: const RoundedRectangleBorder(
                         borderRadius: AppRadius.lgBorder,

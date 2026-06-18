@@ -42,8 +42,9 @@ class AppRouter {
         if (!isAuth && !isOnAuthRoute) return '/login';
 
         // Logged in and trying to access auth routes
-        if (isAuth && isOnAuthRoute && state.matchedLocation != '/splash')
+        if (isAuth && isOnAuthRoute && state.matchedLocation != '/splash') {
           return '/home';
+        }
 
         return null;
       },

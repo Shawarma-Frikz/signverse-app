@@ -77,23 +77,27 @@ class _TranslationScreenState extends State<TranslationScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // ── Camera preview ──────────────────────────────────────
-          if (_isLoading)
-            _buildLoading()
-          else if (_hasError)
-            _buildError()
-          else
-            _buildCameraPreview(),
+      // ── Use a Column so camera fills remaining space and panels
+      // ── stay strictly at top / bottom — no Stack overflow issues.
+      body: SafeArea(
+        child: Column(
+          children: [
+            // ── Top bar (always rendered above camera) ───────────
+            if (!_isLoading && !_hasError) _buildTopBar(),
 
-          // ── Top overlay ──────────────────────────────────────────
-          if (!_isLoading && !_hasError) _buildTopBar(),
+            // ── Camera area fills all remaining space ────────────
+            Expanded(
+              child: _isLoading
+                  ? _buildLoading()
+                  : _hasError
+                  ? _buildError()
+                  : _buildCameraPreview(),
+            ),
 
-          // ── Bottom overlay ────────────────────────────────────────
-          if (!_isLoading && !_hasError) _buildBottomPanel(),
-        ],
+            // ── Bottom panel (always rendered below camera) ──────
+            if (!_isLoading && !_hasError) _buildBottomPanel(),
+          ],
+        ),
       ),
     );
   }
@@ -130,10 +134,10 @@ class _TranslationScreenState extends State<TranslationScreen>
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppColors.error500.withOpacity(0.1),
+                  color: AppColors.error500.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColors.error500.withOpacity(0.3),
+                    color: AppColors.error500.withValues(alpha: 0.3),
                   ),
                 ),
                 child: const Icon(
@@ -166,181 +170,194 @@ class _TranslationScreenState extends State<TranslationScreen>
   Widget _buildCameraPreview() {
     final controller = CameraService.instance.controller!;
 
-    return ClipRRect(
-      child: Transform.scale(
-        scale: 1.0,
-        child: Center(child: CameraPreview(controller)),
+    // ClipRect ensures the scaled preview never bleeds outside its Expanded slot
+    return ClipRect(
+      child: SizedBox.expand(
+        child: FittedBox(
+          fit: BoxFit.cover,
+          child: SizedBox(
+            width: controller.value.previewSize?.height ?? 1,
+            height: controller.value.previewSize?.width ?? 1,
+            child: CameraPreview(controller),
+          ),
+        ),
       ),
     ).animate().fadeIn(duration: 400.ms);
   }
 
+  // ── Top bar: X  •  Live pill (centred)  •  Flip ────────────────
   Widget _buildTopBar() {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.s4),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _CircleButton(
-              icon: Icons.close_rounded,
-              onTap: () => Navigator.maybePop(context),
-            ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.s4,
+        vertical: AppSpacing.s3,
+      ),
+      child: Row(
+        children: [
+          // Close button
+          _CircleButton(
+            icon: Icons.close_rounded,
+            onTap: () => Navigator.maybePop(context),
+          ),
 
-            // Status pill
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.s4,
-                vertical: AppSpacing.s2,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.4),
-                borderRadius: AppRadius.fullBorder,
-                border: Border.all(color: AppColors.accent500.withOpacity(0.3)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.success500,
-                        ),
-                      )
-                      .animate(onPlay: (c) => c.repeat())
-                      .scale(
-                        begin: const Offset(1, 1),
-                        end: const Offset(1.4, 1.4),
-                        duration: 800.ms,
-                      )
-                      .then()
-                      .scale(
-                        begin: const Offset(1.4, 1.4),
-                        end: const Offset(1, 1),
-                        duration: 800.ms,
-                      ),
-                  const SizedBox(width: AppSpacing.s2),
-                  Text(
-                    'Live',
-                    style: AppTextStyles.labelMedium.copyWith(
-                      color: AppColors.white,
-                    ),
+          // Live pill — centred between the two buttons
+          Expanded(
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.s4,
+                  vertical: AppSpacing.s2,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  borderRadius: AppRadius.fullBorder,
+                  border: Border.all(
+                    color: AppColors.accent500.withValues(alpha: 0.3),
                   ),
-                ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.success500,
+                          ),
+                        )
+                        .animate(onPlay: (c) => c.repeat())
+                        .scale(
+                          begin: const Offset(1, 1),
+                          end: const Offset(1.4, 1.4),
+                          duration: 800.ms,
+                        )
+                        .then()
+                        .scale(
+                          begin: const Offset(1.4, 1.4),
+                          end: const Offset(1, 1),
+                          duration: 800.ms,
+                        ),
+                    const SizedBox(width: AppSpacing.s2),
+                    Text(
+                      'Live',
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+          ),
 
-            _CircleButton(
-              icon: Icons.flip_camera_ios_rounded,
-              onTap: _switchCamera,
-            ),
-          ],
-        ),
+          // Flip camera button
+          _CircleButton(
+            icon: Icons.flip_camera_ios_rounded,
+            onTap: _switchCamera,
+          ),
+        ],
       ),
     ).animate().fadeIn(delay: 200.ms).slideY(begin: -0.2);
   }
 
+  // ── Bottom panel: sits below the camera, never overlaps it ──────
   Widget _buildBottomPanel() {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: SafeArea(
-        child: Container(
-          margin: const EdgeInsets.all(AppSpacing.s4),
-          padding: const EdgeInsets.all(AppSpacing.s5),
-          decoration: BoxDecoration(
-            color: AppColors.surface.withOpacity(0.92),
-            borderRadius: AppRadius.xl2Border,
-            border: Border.all(color: AppColors.accent500.withOpacity(0.2)),
-            boxShadow: AppShadows.lg,
-          ),
-          child: Column(
+    return Container(
+      margin: const EdgeInsets.all(AppSpacing.s4),
+      padding: const EdgeInsets.all(AppSpacing.s5),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: 0.92),
+        borderRadius: AppRadius.xl2Border,
+        border: Border.all(color: AppColors.accent500.withValues(alpha: 0.2)),
+        boxShadow: AppShadows.lg,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Prediction display placeholder
+          Row(
             children: [
-              // Prediction display placeholder
-              Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: AppColors.accent500.withOpacity(0.1),
-                      borderRadius: AppRadius.lgBorder,
-                      border: Border.all(
-                        color: AppColors.accent500.withOpacity(0.25),
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '—',
-                        style: AppTextStyles.displaySmall.copyWith(
-                          color: AppColors.accent500,
-                        ),
-                      ),
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.accent500.withValues(alpha: 0.1),
+                  borderRadius: AppRadius.lgBorder,
+                  border: Border.all(
+                    color: AppColors.accent500.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    '—',
+                    style: AppTextStyles.displaySmall.copyWith(
+                      color: AppColors.accent500,
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.s4),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Show a sign to begin',
-                          style: AppTextStyles.labelLarge,
-                        ),
-                        const SizedBox(height: AppSpacing.s1),
-                        Text(
-                          'Position your hand in frame',
-                          style: AppTextStyles.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
-              const SizedBox(height: AppSpacing.s4),
-
-              // Action row
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.abc_rounded, size: 18),
-                      label: const Text('Alphabet'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpacing.s3,
-                        ),
-                        side: BorderSide(
-                          color: AppColors.primary400.withOpacity(0.4),
-                        ),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: AppRadius.lgBorder,
-                        ),
-                      ),
+              const SizedBox(width: AppSpacing.s4),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Show a sign to begin',
+                      style: AppTextStyles.labelLarge,
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.s3),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.translate_rounded, size: 18),
-                      label: const Text('Words'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpacing.s3,
-                        ),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: AppRadius.lgBorder,
-                        ),
-                      ),
+                    const SizedBox(height: AppSpacing.s1),
+                    Text(
+                      'Position your hand in frame',
+                      style: AppTextStyles.bodySmall,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: AppSpacing.s4),
+
+          // Action row
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.abc_rounded, size: 18),
+                  label: const Text('Alphabet'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.s3,
+                    ),
+                    side: BorderSide(
+                      color: AppColors.primary400.withValues(alpha: 0.4),
+                    ),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppRadius.lgBorder,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.s3),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.translate_rounded, size: 18),
+                  label: const Text('Words'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.s3,
+                    ),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppRadius.lgBorder,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2);
   }
@@ -364,9 +381,9 @@ class _CircleButton extends StatelessWidget {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.4),
+          color: Colors.black.withValues(alpha: 0.4),
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withOpacity(0.15)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
         ),
         child: Icon(icon, color: AppColors.white, size: 20),
       ),

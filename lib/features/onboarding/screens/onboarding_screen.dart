@@ -145,7 +145,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.background.withOpacity(0), AppColors.background],
+          colors: [
+            AppColors.background.withValues(alpha: 0),
+            AppColors.background,
+          ],
         ),
       ),
       child: Column(
@@ -155,7 +158,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           SmoothPageIndicator(
             controller: _pageController,
             count: _pages.length,
-            effect: ExpandingDotsEffect(
+            effect: const ExpandingDotsEffect(
               activeDotColor: AppColors.accent500,
               dotColor: AppColors.primary400,
               dotHeight: 6,
@@ -300,17 +303,17 @@ class _OnboardingPageViewState extends State<_OnboardingPageView>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    widget.page.accentColor.withOpacity(0.15),
-                    widget.page.accentColor.withOpacity(0.03),
+                    widget.page.accentColor.withValues(alpha: 0.15),
+                    widget.page.accentColor.withValues(alpha: 0.03),
                   ],
                 ),
                 border: Border.all(
-                  color: widget.page.accentColor.withOpacity(0.3),
+                  color: widget.page.accentColor.withValues(alpha: 0.3),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.page.accentColor.withOpacity(0.2),
+                    color: widget.page.accentColor.withValues(alpha: 0.2),
                     blurRadius: 60,
                     spreadRadius: 10,
                   ),
@@ -377,10 +380,10 @@ class _OnboardingPageViewState extends State<_OnboardingPageView>
                     vertical: AppSpacing.s2,
                   ),
                   decoration: BoxDecoration(
-                    color: widget.page.accentColor.withOpacity(0.1),
+                    color: widget.page.accentColor.withValues(alpha: 0.1),
                     borderRadius: AppRadius.fullBorder,
                     border: Border.all(
-                      color: widget.page.accentColor.withOpacity(0.3),
+                      color: widget.page.accentColor.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(

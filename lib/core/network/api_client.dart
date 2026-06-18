@@ -12,7 +12,7 @@ class ApiClient {
     ),
   );
 
-  static final _storage = const FlutterSecureStorage();
+  static const _storage = FlutterSecureStorage();
 
   static void init() {
     _dio.interceptors.add(

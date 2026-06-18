@@ -23,7 +23,7 @@ class RecentTranslationTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.lgBorder,
-        border: Border.all(color: AppColors.primary400.withOpacity(0.2)),
+        border: Border.all(color: AppColors.primary400.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -31,9 +31,11 @@ class RecentTranslationTile extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.accent500.withOpacity(0.1),
+              color: AppColors.accent500.withValues(alpha: 0.1),
               borderRadius: AppRadius.mdBorder,
-              border: Border.all(color: AppColors.accent500.withOpacity(0.2)),
+              border: Border.all(
+                color: AppColors.accent500.withValues(alpha: 0.2),
+              ),
             ),
             child: Center(
               child: Text(
@@ -61,7 +63,7 @@ class RecentTranslationTile extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.success500.withOpacity(0.1),
+                        color: AppColors.success500.withValues(alpha: 0.1),
                         borderRadius: AppRadius.fullBorder,
                       ),
                       child: Text(

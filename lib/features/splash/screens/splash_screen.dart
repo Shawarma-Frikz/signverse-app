@@ -157,8 +157,8 @@ class _SplashScreenState extends State<SplashScreen>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.accent500.withOpacity(
-                          _glowPulse.value * 0.15,
+                        color: AppColors.accent500.withValues(
+                          alpha: _glowPulse.value * 0.15,
                         ),
                         blurRadius: 120,
                         spreadRadius: 40,
@@ -259,7 +259,7 @@ class _SplashScreenState extends State<SplashScreen>
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.accent500.withOpacity(0.6),
+                      AppColors.accent500.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
@@ -282,8 +282,8 @@ class _SplashScreenState extends State<SplashScreen>
           CustomPaint(
             size: const Size(120, 120),
             painter: _HexPainter(
-              color: AppColors.accent500.withOpacity(0.15),
-              strokeColor: AppColors.accent500.withOpacity(0.4),
+              color: AppColors.accent500.withValues(alpha: 0.15),
+              strokeColor: AppColors.accent500.withValues(alpha: 0.4),
               strokeWidth: 1.5,
             ),
           ),
@@ -292,7 +292,7 @@ class _SplashScreenState extends State<SplashScreen>
           CustomPaint(
             size: const Size(80, 80),
             painter: _HexPainter(
-              color: AppColors.accent500.withOpacity(0.1),
+              color: AppColors.accent500.withValues(alpha: 0.1),
               strokeColor: AppColors.accent500,
               strokeWidth: 2,
             ),
@@ -308,7 +308,9 @@ class _SplashScreenState extends State<SplashScreen>
                   fontSize: 36,
                   shadows: [
                     Shadow(
-                      color: AppColors.accent500.withOpacity(_glowPulse.value),
+                      color: AppColors.accent500.withValues(
+                        alpha: _glowPulse.value,
+                      ),
                       blurRadius: 20,
                     ),
                   ],

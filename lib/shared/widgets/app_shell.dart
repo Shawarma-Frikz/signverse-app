@@ -21,7 +21,7 @@ class AppShell extends StatelessWidget {
         color: AppColors.surface,
         border: Border(
           top: BorderSide(
-            color: AppColors.primary400.withOpacity(0.3),
+            color: AppColors.primary400.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -124,7 +124,7 @@ class _NavItem extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: isActive
-                    ? AppColors.accent500.withOpacity(0.15)
+                    ? AppColors.accent500.withValues(alpha: 0.15)
                     : Colors.transparent,
                 borderRadius: AppRadius.fullBorder,
               ),

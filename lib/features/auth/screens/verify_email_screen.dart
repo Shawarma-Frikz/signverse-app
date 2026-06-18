@@ -39,12 +39,12 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      AppColors.accent500.withOpacity(0.2),
-                      AppColors.accent500.withOpacity(0.03),
+                      AppColors.accent500.withValues(alpha: 0.2),
+                      AppColors.accent500.withValues(alpha: 0.03),
                     ],
                   ),
                   border: Border.all(
-                    color: AppColors.accent500.withOpacity(0.4),
+                    color: AppColors.accent500.withValues(alpha: 0.4),
                     width: 1.5,
                   ),
                 ),
@@ -77,10 +77,10 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.s3),
                 decoration: BoxDecoration(
-                  color: AppColors.warning500.withOpacity(0.08),
+                  color: AppColors.warning500.withValues(alpha: 0.08),
                   borderRadius: AppRadius.mdBorder,
                   border: Border.all(
-                    color: AppColors.warning500.withOpacity(0.3),
+                    color: AppColors.warning500.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
