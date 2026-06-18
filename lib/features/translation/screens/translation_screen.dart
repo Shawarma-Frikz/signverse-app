@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
@@ -5,6 +6,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:ui';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/camera_service.dart';
+import 'package:hand_detection/hand_detection.dart';
+import '../../../core/services/hand_landmark_service.dart';
+import '../widgets/landmark_painter.dart';
 
 class TranslationScreen extends StatefulWidget {
   const TranslationScreen({super.key});
@@ -20,6 +24,11 @@ class _TranslationScreenState extends State<TranslationScreen>
   String _errorMessage = '';
   bool _isFrontCamera = true;
   bool _isMuted = false;
+
+  // New state fields for hand detection
+  List<Hand> _detectedHands = [];
+  Size _imageSize = Size.zero;
+  bool _isStreaming = false;
 
   // Placeholder prediction state — wired to API in next sprint step
   String? _detectedWord;
@@ -41,7 +50,9 @@ class _TranslationScreenState extends State<TranslationScreen>
     });
     try {
       await CameraService.instance.initialize(useFrontCamera: _isFrontCamera);
+      await HandLandmarkService.instance.initialize();
       setState(() => _isLoading = false);
+      _startStream();
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -53,12 +64,47 @@ class _TranslationScreenState extends State<TranslationScreen>
     }
   }
 
+  void _startStream() {
+    final controller = CameraService.instance.controller;
+    if (controller == null || _isStreaming) return;
+    _isStreaming = true;
+
+    controller.startImageStream((image) async {
+      // FIX: Removed the second argument (sensorOrientation)
+      final result = await HandLandmarkService.instance.detect(
+        image,
+        sensorOrientation: controller.description.sensorOrientation,
+        isFrontCamera: _isFrontCamera,
+      );
+      if (result == null || !mounted) return;
+
+      setState(() {
+        _detectedHands = result.hands;
+
+        final orientation = controller.description.sensorOrientation;
+        final isSwapped = orientation == 90 || orientation == 270;
+
+        _imageSize = isSwapped
+            ? Size(image.height.toDouble(), image.width.toDouble())
+            : Size(image.width.toDouble(), image.height.toDouble());
+      });
+    });
+  }
+
   Future<void> _switchCamera() async {
     HapticFeedback.lightImpact();
     setState(() => _isLoading = true);
+
+    final controller = CameraService.instance.controller;
+    await controller?.stopImageStream();
+    _isStreaming = false;
+
     _isFrontCamera = !_isFrontCamera;
     await CameraService.instance.switchCamera();
+    await HandLandmarkService.instance.reset(); // ← the actual fix
+
     setState(() => _isLoading = false);
+    _startStream();
   }
 
   void _toggleMute() {
@@ -78,6 +124,8 @@ class _TranslationScreenState extends State<TranslationScreen>
 
     if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused) {
+      controller.stopImageStream();
+      _isStreaming = false;
       CameraService.instance.dispose();
     } else if (state == AppLifecycleState.resumed) {
       _initCamera();
@@ -87,6 +135,8 @@ class _TranslationScreenState extends State<TranslationScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    CameraService.instance.controller?.stopImageStream();
+    HandLandmarkService.instance.dispose();
     CameraService.instance.dispose();
     super.dispose();
   }
@@ -184,7 +234,19 @@ class _TranslationScreenState extends State<TranslationScreen>
 
   Widget _buildCameraFeed() {
     final controller = CameraService.instance.controller!;
-    return Center(child: CameraPreview(controller));
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Center(child: CameraPreview(controller)),
+        if (_detectedHands.isNotEmpty)
+          CustomPaint(
+            painter: LandmarkPainter(
+              hands: _detectedHands,
+              imageSize: _imageSize,
+            ),
+          ),
+      ],
+    );
   }
 
   Widget _buildLoadingState() {

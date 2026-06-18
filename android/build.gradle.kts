@@ -26,6 +26,7 @@ subprojects {
 subprojects {
     pluginManager.withPlugin("com.android.library") {
         extensions.configure<BaseExtension>("android") {
+            compileSdkVersion(36) // <--- FORCES SDK 36 FOR ALL PLUGINS
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_17
                 targetCompatibility = JavaVersion.VERSION_17
