@@ -26,8 +26,8 @@ class AuthButton extends StatelessWidget {
               ? AppGradients.accent
               : LinearGradient(
                   colors: [
-                    AppColors.primary400.withOpacity(0.5),
-                    AppColors.primary400.withOpacity(0.5),
+                    AppColors.primary400.withValues(alpha: 0.5),
+                    AppColors.primary400.withValues(alpha: 0.5),
                   ],
                 ),
           borderRadius: AppRadius.lgBorder,

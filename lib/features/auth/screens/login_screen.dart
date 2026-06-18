@@ -65,7 +65,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.accent500.withOpacity(0.08),
+                    AppColors.accent500.withValues(alpha: 0.08),
                     Colors.transparent,
                   ],
                 ),
@@ -83,7 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.secondary500.withOpacity(0.06),
+                    AppColors.secondary500.withValues(alpha: 0.06),
                     Colors.transparent,
                   ],
                 ),
@@ -117,8 +117,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           validator: (v) {
-                            if (v == null || v.isEmpty)
+                            if (v == null || v.isEmpty) {
                               return 'Email is required';
+                            }
                             if (!v.contains('@')) return 'Enter a valid email';
                             return null;
                           },
@@ -139,8 +140,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           textInputAction: TextInputAction.done,
                           onSubmitted: _login,
                           validator: (v) {
-                            if (v == null || v.isEmpty)
+                            if (v == null || v.isEmpty) {
                               return 'Password is required';
+                            }
                             if (v.length < 6) return 'Password too short';
                             return null;
                           },
@@ -172,10 +174,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Container(
                         padding: const EdgeInsets.all(AppSpacing.s3),
                         decoration: BoxDecoration(
-                          color: AppColors.error500.withOpacity(0.1),
+                          color: AppColors.error500.withValues(alpha: 0.1),
                           borderRadius: AppRadius.mdBorder,
                           border: Border.all(
-                            color: AppColors.error500.withOpacity(0.3),
+                            color: AppColors.error500.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
@@ -218,7 +220,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       children: [
                         Expanded(
                           child: Divider(
-                            color: AppColors.primary400.withOpacity(0.4),
+                            color: AppColors.primary400.withValues(alpha: 0.4),
                           ),
                         ),
                         Padding(
@@ -229,7 +231,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         Expanded(
                           child: Divider(
-                            color: AppColors.primary400.withOpacity(0.4),
+                            color: AppColors.primary400.withValues(alpha: 0.4),
                           ),
                         ),
                       ],

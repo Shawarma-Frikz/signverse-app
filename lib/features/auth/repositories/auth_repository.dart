@@ -67,14 +67,6 @@ class AuthRepository {
     final statusCode = e.response?.statusCode;
     final data = e.response?.data;
 
-    print('=== AUTH ERROR DEBUG ===');
-    print('Status code: ${e.response?.statusCode}');
-    print('Data: ${e.response?.data}');
-    print('Data type: ${e.response?.data?.runtimeType}');
-    print('DioException type: ${e.type}');
-    print('Message: ${e.message}');
-    print('========================');
-
     // Extract detail message safely
     String? detail;
     if (data is Map) {

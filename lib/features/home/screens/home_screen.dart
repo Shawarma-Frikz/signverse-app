@@ -31,7 +31,7 @@ class HomeScreen extends ConsumerWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.accent500.withOpacity(0.08),
+                    AppColors.accent500.withValues(alpha: 0.08),
                     Colors.transparent,
                   ],
                 ),
@@ -48,7 +48,7 @@ class HomeScreen extends ConsumerWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.secondary500.withOpacity(0.06),
+                    AppColors.secondary500.withValues(alpha: 0.06),
                     Colors.transparent,
                   ],
                 ),
@@ -104,7 +104,7 @@ class HomeScreen extends ConsumerWidget {
                     child: Row(
                       children: [
                         Expanded(
-                          child: StatCard(
+                          child: const StatCard(
                             icon: Icons.translate_rounded,
                             label: 'Translations',
                             value: '0',
@@ -113,7 +113,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         const SizedBox(width: AppSpacing.s3),
                         Expanded(
-                          child: StatCard(
+                          child: const StatCard(
                             icon: Icons.school_rounded,
                             label: 'Signs learned',
                             value: '0',
@@ -122,11 +122,11 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         const SizedBox(width: AppSpacing.s3),
                         Expanded(
-                          child: StatCard(
+                          child: const StatCard(
                             icon: Icons.local_fire_department_rounded,
                             label: 'Day streak',
                             value: '1',
-                            color: const Color(0xFFFF6B35),
+                            color: Color(0xFFFF6B35),
                           ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
                         ),
                       ],
@@ -336,10 +336,14 @@ class _HeroCardState extends State<_HeroCard>
                 colors: [Color(0xFF1A2456), Color(0xFF0F1535)],
               ),
               borderRadius: AppRadius.xl2Border,
-              border: Border.all(color: AppColors.accent500.withOpacity(0.3)),
+              border: Border.all(
+                color: AppColors.accent500.withValues(alpha: 0.3),
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.accent500.withOpacity(_glow.value * 0.15),
+                  color: AppColors.accent500.withValues(
+                    alpha: _glow.value * 0.15,
+                  ),
                   blurRadius: 30,
                   spreadRadius: 0,
                 ),
@@ -363,10 +367,10 @@ class _HeroCardState extends State<_HeroCard>
                         vertical: AppSpacing.s1,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.accent500.withOpacity(0.15),
+                        color: AppColors.accent500.withValues(alpha: 0.15),
                         borderRadius: AppRadius.fullBorder,
                         border: Border.all(
-                          color: AppColors.accent500.withOpacity(0.3),
+                          color: AppColors.accent500.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
@@ -449,10 +453,10 @@ class _HeroCardState extends State<_HeroCard>
                 width: 100,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: AppColors.accent500.withOpacity(0.08),
+                  color: AppColors.accent500.withValues(alpha: 0.08),
                   borderRadius: AppRadius.xlBorder,
                   border: Border.all(
-                    color: AppColors.accent500.withOpacity(0.15),
+                    color: AppColors.accent500.withValues(alpha: 0.15),
                   ),
                 ),
                 child: Column(
@@ -488,11 +492,11 @@ class _EmptyTranslations extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.xlBorder,
-        border: Border.all(color: AppColors.primary400.withOpacity(0.2)),
+        border: Border.all(color: AppColors.primary400.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
-          Text('📭', style: const TextStyle(fontSize: 40)),
+          const Text('📭', style: TextStyle(fontSize: 40)),
           const SizedBox(height: AppSpacing.s3),
           Text(
             'No translations yet',
@@ -516,9 +520,11 @@ class _EmptyTranslations extends StatelessWidget {
                 vertical: AppSpacing.s3,
               ),
               decoration: BoxDecoration(
-                color: AppColors.accent500.withOpacity(0.1),
+                color: AppColors.accent500.withValues(alpha: 0.1),
                 borderRadius: AppRadius.fullBorder,
-                border: Border.all(color: AppColors.accent500.withOpacity(0.3)),
+                border: Border.all(
+                  color: AppColors.accent500.withValues(alpha: 0.3),
+                ),
               ),
               child: Text(
                 'Make your first translation',

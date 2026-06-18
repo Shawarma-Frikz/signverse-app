@@ -67,7 +67,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.accent500.withOpacity(0.07),
+                    AppColors.accent500.withValues(alpha: 0.07),
                     Colors.transparent,
                   ],
                 ),
@@ -121,12 +121,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.accent500.withOpacity(0.15),
-                    AppColors.accent500.withOpacity(0.03),
+                    AppColors.accent500.withValues(alpha: 0.15),
+                    AppColors.accent500.withValues(alpha: 0.03),
                   ],
                 ),
                 border: Border.all(
-                  color: AppColors.accent500.withOpacity(0.3),
+                  color: AppColors.accent500.withValues(alpha: 0.3),
                   width: 1.5,
                 ),
               ),
@@ -195,12 +195,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             shape: BoxShape.circle,
             gradient: RadialGradient(
               colors: [
-                AppColors.success500.withOpacity(0.2),
-                AppColors.success500.withOpacity(0.05),
+                AppColors.success500.withValues(alpha: 0.2),
+                AppColors.success500.withValues(alpha: 0.05),
               ],
             ),
             border: Border.all(
-              color: AppColors.success500.withOpacity(0.4),
+              color: AppColors.success500.withValues(alpha: 0.4),
               width: 1.5,
             ),
           ),
@@ -237,9 +237,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         Container(
           padding: const EdgeInsets.all(AppSpacing.s3),
           decoration: BoxDecoration(
-            color: AppColors.accent500.withOpacity(0.08),
+            color: AppColors.accent500.withValues(alpha: 0.08),
             borderRadius: AppRadius.mdBorder,
-            border: Border.all(color: AppColors.accent500.withOpacity(0.2)),
+            border: Border.all(
+              color: AppColors.accent500.withValues(alpha: 0.2),
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

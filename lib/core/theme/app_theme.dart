@@ -166,7 +166,7 @@ class AppShadows {
 
   static List<BoxShadow> get sm => [
     BoxShadow(
-      color: const Color(0xFF0A0E27).withOpacity(0.1),
+      color: const Color(0xFF0A0E27).withValues(alpha: 0.1),
       blurRadius: 3,
       offset: const Offset(0, 1),
     ),
@@ -174,7 +174,7 @@ class AppShadows {
 
   static List<BoxShadow> get md => [
     BoxShadow(
-      color: const Color(0xFF0A0E27).withOpacity(0.1),
+      color: const Color(0xFF0A0E27).withValues(alpha: 0.1),
       blurRadius: 6,
       offset: const Offset(0, 4),
     ),
@@ -182,7 +182,7 @@ class AppShadows {
 
   static List<BoxShadow> get lg => [
     BoxShadow(
-      color: const Color(0xFF0A0E27).withOpacity(0.1),
+      color: const Color(0xFF0A0E27).withValues(alpha: 0.1),
       blurRadius: 15,
       offset: const Offset(0, 10),
     ),
@@ -190,12 +190,12 @@ class AppShadows {
 
   static List<BoxShadow> get glowCyan => [
     BoxShadow(
-      color: AppColors.accent500.withOpacity(0.3),
+      color: AppColors.accent500.withValues(alpha: 0.3),
       blurRadius: 20,
       spreadRadius: 0,
     ),
     BoxShadow(
-      color: AppColors.accent500.withOpacity(0.1),
+      color: AppColors.accent500.withValues(alpha: 0.1),
       blurRadius: 60,
       spreadRadius: 0,
     ),
@@ -390,13 +390,15 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surfaceVariant,
-        border: OutlineInputBorder(
+        border: const OutlineInputBorder(
           borderRadius: AppRadius.lgBorder,
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: AppRadius.lgBorder,
-          borderSide: BorderSide(color: AppColors.primary400.withOpacity(0.5)),
+          borderSide: BorderSide(
+            color: AppColors.primary400.withValues(alpha: 0.5),
+          ),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: AppRadius.lgBorder,
@@ -415,25 +417,25 @@ class AppTheme {
       ),
 
       // Card
-      cardTheme: CardThemeData(
+      cardTheme: const CardThemeData(
         color: AppColors.surface,
         elevation: 0,
-        shape: const RoundedRectangleBorder(borderRadius: AppRadius.xlBorder),
-        margin: const EdgeInsets.all(AppSpacing.s2),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.xlBorder),
+        margin: EdgeInsets.all(AppSpacing.s2),
       ),
 
       // Chip
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surfaceVariant,
-        selectedColor: AppColors.accent500.withOpacity(0.2),
+        selectedColor: AppColors.accent500.withValues(alpha: 0.2),
         labelStyle: AppTextStyles.labelMedium,
-        side: BorderSide(color: AppColors.primary400.withOpacity(0.3)),
+        side: BorderSide(color: AppColors.primary400.withValues(alpha: 0.3)),
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.fullBorder),
       ),
 
       // Divider
       dividerTheme: DividerThemeData(
-        color: AppColors.primary400.withOpacity(0.3),
+        color: AppColors.primary400.withValues(alpha: 0.3),
         thickness: 1,
       ),
 

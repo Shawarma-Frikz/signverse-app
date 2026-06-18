@@ -54,7 +54,7 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                       borderRadius: AppRadius.xl2Border,
                       border: Border.all(
-                        color: AppColors.accent500.withOpacity(0.2),
+                        color: AppColors.accent500.withValues(alpha: 0.2),
                       ),
                     ),
                     child: Row(
@@ -62,7 +62,7 @@ class SettingsScreen extends ConsumerWidget {
                         Container(
                           width: 56,
                           height: 56,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             gradient: AppGradients.accent,
                             shape: BoxShape.circle,
                           ),
@@ -136,7 +136,7 @@ class SettingsScreen extends ConsumerWidget {
                           trailing: Switch(
                             value: true,
                             onChanged: (_) {},
-                            activeColor: AppColors.accent500,
+                            activeThumbColor: AppColors.accent500,
                           ),
                         ),
                         _SettingsTile(
@@ -145,7 +145,7 @@ class SettingsScreen extends ConsumerWidget {
                           trailing: Switch(
                             value: true,
                             onChanged: (_) {},
-                            activeColor: AppColors.accent500,
+                            activeThumbColor: AppColors.accent500,
                           ),
                         ),
                         _SettingsTile(
@@ -154,7 +154,7 @@ class SettingsScreen extends ConsumerWidget {
                           trailing: Switch(
                             value: true,
                             onChanged: (_) {},
-                            activeColor: AppColors.accent500,
+                            activeThumbColor: AppColors.accent500,
                           ),
                           isLast: true,
                         ),
@@ -204,7 +204,7 @@ class _SettingsGroup extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.xlBorder,
-        border: Border.all(color: AppColors.primary400.withOpacity(0.2)),
+        border: Border.all(color: AppColors.primary400.withValues(alpha: 0.2)),
       ),
       child: Column(children: items),
     );
@@ -238,7 +238,7 @@ class _SettingsTile extends StatelessWidget {
               Container(
                 width: 36,
                 height: 36,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.surfaceVariant,
                   borderRadius: AppRadius.mdBorder,
                 ),
@@ -258,7 +258,7 @@ class _SettingsTile extends StatelessWidget {
         if (!isLast)
           Divider(
             height: 1,
-            color: AppColors.primary400.withOpacity(0.2),
+            color: AppColors.primary400.withValues(alpha: 0.2),
             indent: AppSpacing.s4,
             endIndent: AppSpacing.s4,
           ),

@@ -79,7 +79,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.secondary500.withOpacity(0.08),
+                    AppColors.secondary500.withValues(alpha: 0.08),
                     Colors.transparent,
                   ],
                 ),
@@ -121,8 +121,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           prefixIcon: Icons.person_outlined,
                           controller: _nameController,
                           validator: (v) {
-                            if (v == null || v.isEmpty)
+                            if (v == null || v.isEmpty) {
                               return 'Name is required';
+                            }
                             if (v.length < 2) return 'Name too short';
                             return null;
                           },
@@ -141,8 +142,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           validator: (v) {
-                            if (v == null || v.isEmpty)
+                            if (v == null || v.isEmpty) {
                               return 'Email is required';
+                            }
                             if (!v.contains('@')) return 'Enter a valid email';
                             return null;
                           },
@@ -161,10 +163,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           controller: _passwordController,
                           isPassword: true,
                           validator: (v) {
-                            if (v == null || v.isEmpty)
+                            if (v == null || v.isEmpty) {
                               return 'Password is required';
-                            if (v.length < 8)
+                            }
+                            if (v.length < 8) {
                               return 'Password must be at least 8 characters';
+                            }
                             return null;
                           },
                         )
@@ -184,10 +188,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           textInputAction: TextInputAction.done,
                           onSubmitted: _register,
                           validator: (v) {
-                            if (v == null || v.isEmpty)
+                            if (v == null || v.isEmpty) {
                               return 'Please confirm your password';
-                            if (v != _passwordController.text)
+                            }
+                            if (v != _passwordController.text) {
                               return 'Passwords do not match';
+                            }
                             return null;
                           },
                         )
@@ -262,10 +268,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       Container(
                         padding: const EdgeInsets.all(AppSpacing.s3),
                         decoration: BoxDecoration(
-                          color: AppColors.error500.withOpacity(0.1),
+                          color: AppColors.error500.withValues(alpha: 0.1),
                           borderRadius: AppRadius.mdBorder,
                           border: Border.all(
-                            color: AppColors.error500.withOpacity(0.3),
+                            color: AppColors.error500.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
