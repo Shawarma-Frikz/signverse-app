@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'dart:ui';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/camera_service.dart';
 
@@ -18,6 +19,13 @@ class _TranslationScreenState extends State<TranslationScreen>
   bool _hasError = false;
   String _errorMessage = '';
   bool _isFrontCamera = true;
+  bool _isMuted = false;
+
+  // Placeholder prediction state — wired to API in next sprint step
+  String? _detectedWord;
+  double _confidence = 0.0;
+  String _translationFr = '';
+  String _translationAr = '';
 
   @override
   void initState() {
@@ -53,6 +61,16 @@ class _TranslationScreenState extends State<TranslationScreen>
     setState(() => _isLoading = false);
   }
 
+  void _toggleMute() {
+    HapticFeedback.lightImpact();
+    setState(() => _isMuted = !_isMuted);
+  }
+
+  void _stopTranslation() {
+    HapticFeedback.mediumImpact();
+    Navigator.maybePop(context);
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final controller = CameraService.instance.controller;
@@ -76,286 +94,334 @@ class _TranslationScreenState extends State<TranslationScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      // ── Use a Column so camera fills remaining space and panels
-      // ── stay strictly at top / bottom — no Stack overflow issues.
+      backgroundColor: AppColors.primary900,
       body: SafeArea(
         child: Column(
           children: [
-            // ── Top bar (always rendered above camera) ───────────
-            if (!_isLoading && !_hasError) _buildTopBar(),
-
-            // ── Camera area fills all remaining space ────────────
+            _buildTopBar(),
             Expanded(
-              child: _isLoading
-                  ? _buildLoading()
-                  : _hasError
-                  ? _buildError()
-                  : _buildCameraPreview(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
+                child: _buildViewfinder(),
+              ),
             ),
-
-            // ── Bottom panel (always rendered below camera) ──────
-            if (!_isLoading && !_hasError) _buildBottomPanel(),
+            _buildTranslationOutput(),
+            _buildBottomControls(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLoading() {
-    return Container(
-      color: AppColors.background,
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation(AppColors.accent500),
-              strokeWidth: 2,
-            ),
-            SizedBox(height: AppSpacing.s4),
-            Text('Starting camera...'),
-          ],
-        ),
+  // ── Top bar ────────────────────────────────────────────────────
+  Widget _buildTopBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s4,
+        AppSpacing.s2,
+        AppSpacing.s4,
+        AppSpacing.s2,
       ),
-    );
-  }
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _IconTapTarget(
+            icon: Icons.arrow_back_ios_new_rounded,
+            onTap: () => Navigator.maybePop(context),
+          ),
 
-  Widget _buildError() {
-    return Container(
-      color: AppColors.background,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.s8),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          // Live status pill
+          Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppColors.error500.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.error500.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: const Icon(
-                  Icons.videocam_off_rounded,
-                  color: AppColors.error400,
-                  size: 36,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s5),
-              Text('Camera access needed', style: AppTextStyles.headlineMedium),
-              const SizedBox(height: AppSpacing.s2),
+              _PulsingDot(active: !_isLoading && !_hasError),
+              const SizedBox(width: AppSpacing.s2),
               Text(
-                _errorMessage,
-                style: AppTextStyles.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.s6),
-              ElevatedButton.icon(
-                onPressed: _initCamera,
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Try Again'),
+                'Live',
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: AppColors.accent300,
+                  letterSpacing: 0.4,
+                ),
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
 
-  Widget _buildCameraPreview() {
-    final controller = CameraService.instance.controller!;
-
-    // ClipRect ensures the scaled preview never bleeds outside its Expanded slot
-    return ClipRect(
-      child: SizedBox.expand(
-        child: FittedBox(
-          fit: BoxFit.cover,
-          child: SizedBox(
-            width: controller.value.previewSize?.height ?? 1,
-            height: controller.value.previewSize?.width ?? 1,
-            child: CameraPreview(controller),
-          ),
-        ),
+          _IconTapTarget(icon: Icons.more_horiz_rounded, onTap: () {}),
+        ],
       ),
     ).animate().fadeIn(duration: 400.ms);
   }
 
-  // ── Top bar: X  •  Live pill (centred)  •  Flip ────────────────
-  Widget _buildTopBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.s4,
-        vertical: AppSpacing.s3,
+  // ── Viewfinder ─────────────────────────────────────────────────
+  Widget _buildViewfinder() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: 0.05),
+        borderRadius: AppRadius.xl2Border,
+        border: Border.all(
+          color: AppColors.accent500.withValues(alpha: 0.3),
+          width: 2,
+        ),
       ),
-      child: Row(
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          // Close button
-          _CircleButton(
-            icon: Icons.close_rounded,
-            onTap: () => Navigator.maybePop(context),
-          ),
+          if (_isLoading)
+            _buildLoadingState()
+          else if (_hasError)
+            _buildErrorState()
+          else
+            _buildCameraFeed(),
 
-          // Live pill — centred between the two buttons
-          Expanded(
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.s4,
-                  vertical: AppSpacing.s2,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  borderRadius: AppRadius.fullBorder,
-                  border: Border.all(
-                    color: AppColors.accent500.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.success500,
-                          ),
-                        )
-                        .animate(onPlay: (c) => c.repeat())
-                        .scale(
-                          begin: const Offset(1, 1),
-                          end: const Offset(1.4, 1.4),
-                          duration: 800.ms,
-                        )
-                        .then()
-                        .scale(
-                          begin: const Offset(1.4, 1.4),
-                          end: const Offset(1, 1),
-                          duration: 800.ms,
-                        ),
-                    const SizedBox(width: AppSpacing.s2),
-                    Text(
-                      'Live',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.white,
-                      ),
-                    ),
-                  ],
+          // Corner markers — always visible over the feed
+          if (!_isLoading && !_hasError) ..._buildCornerMarkers(),
+        ],
+      ),
+    ).animate().fadeIn(delay: 100.ms).scale(begin: const Offset(0.97, 0.97));
+  }
+
+  Widget _buildCameraFeed() {
+    final controller = CameraService.instance.controller!;
+    return Center(child: CameraPreview(controller));
+  }
+
+  Widget _buildLoadingState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation(AppColors.accent500),
+            strokeWidth: 2,
+          ),
+          SizedBox(height: AppSpacing.s4),
+          Text('Starting camera...'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.s6),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.videocam_off_rounded,
+              color: AppColors.error400,
+              size: 36,
+            ),
+            const SizedBox(height: AppSpacing.s4),
+            Text(
+              _errorMessage,
+              style: AppTextStyles.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.s4),
+            TextButton.icon(
+              onPressed: _initCamera,
+              icon: const Icon(
+                Icons.refresh_rounded,
+                color: AppColors.accent500,
+                size: 18,
+              ),
+              label: Text(
+                'Try Again',
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.accent500,
                 ),
               ),
             ),
-          ),
-
-          // Flip camera button
-          _CircleButton(
-            icon: Icons.flip_camera_ios_rounded,
-            onTap: _switchCamera,
-          ),
-        ],
+          ],
+        ),
       ),
-    ).animate().fadeIn(delay: 200.ms).slideY(begin: -0.2);
+    );
   }
 
-  // ── Bottom panel: sits below the camera, never overlaps it ──────
-  Widget _buildBottomPanel() {
-    return Container(
-      margin: const EdgeInsets.all(AppSpacing.s4),
-      padding: const EdgeInsets.all(AppSpacing.s5),
-      decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.92),
-        borderRadius: AppRadius.xl2Border,
-        border: Border.all(color: AppColors.accent500.withValues(alpha: 0.2)),
-        boxShadow: AppShadows.lg,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Prediction display placeholder
-          Row(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: AppColors.accent500.withValues(alpha: 0.1),
-                  borderRadius: AppRadius.lgBorder,
-                  border: Border.all(
-                    color: AppColors.accent500.withValues(alpha: 0.25),
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    '—',
-                    style: AppTextStyles.displaySmall.copyWith(
-                      color: AppColors.accent500,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.s4),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Show a sign to begin',
-                      style: AppTextStyles.labelLarge,
-                    ),
-                    const SizedBox(height: AppSpacing.s1),
-                    Text(
-                      'Position your hand in frame',
-                      style: AppTextStyles.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.s4),
+  List<Widget> _buildCornerMarkers() {
+    const size = 24.0;
+    const thickness = 3.0;
+    const offset = 12.0;
+    const color = AppColors.accent400;
 
-          // Action row
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.abc_rounded, size: 18),
-                  label: const Text('Alphabet'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.s3,
-                    ),
-                    side: BorderSide(
-                      color: AppColors.primary400.withValues(alpha: 0.4),
-                    ),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: AppRadius.lgBorder,
-                    ),
+    return [
+      // Top-left
+      const Positioned(
+        top: offset,
+        left: offset,
+        child: _CornerMarker(
+          size: size,
+          thickness: thickness,
+          color: color,
+          alignment: Alignment.topLeft,
+        ),
+      ),
+      // Top-right
+      const Positioned(
+        top: offset,
+        right: offset,
+        child: _CornerMarker(
+          size: size,
+          thickness: thickness,
+          color: color,
+          alignment: Alignment.topRight,
+        ),
+      ),
+      // Bottom-left
+      const Positioned(
+        bottom: offset,
+        left: offset,
+        child: _CornerMarker(
+          size: size,
+          thickness: thickness,
+          color: color,
+          alignment: Alignment.bottomLeft,
+        ),
+      ),
+      // Bottom-right
+      const Positioned(
+        bottom: offset,
+        right: offset,
+        child: _CornerMarker(
+          size: size,
+          thickness: thickness,
+          color: color,
+          alignment: Alignment.bottomRight,
+        ),
+      ),
+    ];
+  }
+
+  // ── Translation output (glass card) ───────────────────────────
+  Widget _buildTranslationOutput() {
+    final hasResult = _detectedWord != null;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s4,
+        AppSpacing.s3,
+        AppSpacing.s4,
+        0,
+      ),
+      child: ClipRRect(
+        borderRadius: AppRadius.xlBorder,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.s4),
+            decoration: BoxDecoration(
+              color: AppColors.white.withValues(alpha: 0.08),
+              borderRadius: AppRadius.xlBorder,
+              border: Border.all(color: AppColors.white.withValues(alpha: 0.1)),
+            ),
+            child: hasResult
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'DETECTED',
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.white.withValues(alpha: 0.4),
+                              fontSize: 10,
+                            ),
+                          ),
+                          Text(
+                            '${(_confidence * 100).toStringAsFixed(1)}%',
+                            style: AppTextStyles.mono.copyWith(
+                              color: AppColors.accent400,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.s1),
+                      Text(
+                        '"$_detectedWord"',
+                        style: AppTextStyles.headlineLarge.copyWith(
+                          fontSize: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '$_translationFr / $_translationAr',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.white.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      const Icon(
+                        Icons.front_hand_rounded,
+                        color: AppColors.accent300,
+                        size: 22,
+                      ),
+                      const SizedBox(width: AppSpacing.s3),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Show a sign to begin',
+                              style: AppTextStyles.labelLarge.copyWith(
+                                color: AppColors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Position your hand inside the frame',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.white.withValues(alpha: 0.5),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.s3),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.translate_rounded, size: 18),
-                  label: const Text('Words'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.s3,
-                    ),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: AppRadius.lgBorder,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          ),
+        ),
+      ),
+    ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.15);
+  }
+
+  // ── Bottom controls ────────────────────────────────────────────
+  Widget _buildBottomControls() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s4,
+        AppSpacing.s4,
+        AppSpacing.s4,
+        AppSpacing.s3,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _RoundIconButton(
+            icon: _isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+            size: 40,
+            background: AppColors.white.withValues(alpha: 0.1),
+            iconColor: AppColors.white,
+            onTap: _toggleMute,
+          ),
+          const SizedBox(width: AppSpacing.s8),
+          _StopFab(onTap: _stopTranslation),
+          const SizedBox(width: AppSpacing.s8),
+          _RoundIconButton(
+            icon: Icons.flip_camera_ios_rounded,
+            size: 40,
+            background: AppColors.white.withValues(alpha: 0.1),
+            iconColor: AppColors.white,
+            onTap: _switchCamera,
           ),
         ],
       ),
@@ -363,12 +429,131 @@ class _TranslationScreenState extends State<TranslationScreen>
   }
 }
 
-// ── Circle button ─────────────────────────────────────────────────
-class _CircleButton extends StatelessWidget {
+// ── Reusable bits ────────────────────────────────────────────────
+
+class _IconTapTarget extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
+  const _IconTapTarget({required this.icon, required this.onTap});
 
-  const _CircleButton({required this.icon, required this.onTap});
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.s2),
+        child: Icon(
+          icon,
+          color: AppColors.white.withValues(alpha: 0.7),
+          size: 20,
+        ),
+      ),
+    );
+  }
+}
+
+class _PulsingDot extends StatelessWidget {
+  final bool active;
+  const _PulsingDot({required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    final dot = Container(
+      width: 7,
+      height: 7,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: active ? AppColors.success500 : AppColors.primary300,
+      ),
+    );
+
+    if (!active) return dot;
+
+    return dot
+        .animate(onPlay: (c) => c.repeat())
+        .scale(
+          begin: const Offset(1, 1),
+          end: const Offset(1.6, 1.6),
+          duration: 800.ms,
+          curve: Curves.easeOut,
+        )
+        .fadeOut(duration: 800.ms);
+  }
+}
+
+class _CornerMarker extends StatelessWidget {
+  final double size;
+  final double thickness;
+  final Color color;
+  final Alignment alignment;
+
+  const _CornerMarker({
+    required this.size,
+    required this.thickness,
+    required this.color,
+    required this.alignment,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Border border;
+    BorderRadius radius;
+
+    switch (alignment) {
+      case Alignment.topLeft:
+        border = Border(
+          left: BorderSide(color: color, width: thickness),
+          top: BorderSide(color: color, width: thickness),
+        );
+        radius = const BorderRadius.only(topLeft: Radius.circular(6));
+        break;
+      case Alignment.topRight:
+        border = Border(
+          right: BorderSide(color: color, width: thickness),
+          top: BorderSide(color: color, width: thickness),
+        );
+        radius = const BorderRadius.only(topRight: Radius.circular(6));
+        break;
+      case Alignment.bottomLeft:
+        border = Border(
+          left: BorderSide(color: color, width: thickness),
+          bottom: BorderSide(color: color, width: thickness),
+        );
+        radius = const BorderRadius.only(bottomLeft: Radius.circular(6));
+        break;
+      default:
+        border = Border(
+          right: BorderSide(color: color, width: thickness),
+          bottom: BorderSide(color: color, width: thickness),
+        );
+        radius = const BorderRadius.only(bottomRight: Radius.circular(6));
+    }
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(border: border, borderRadius: radius),
+    );
+  }
+}
+
+class _RoundIconButton extends StatelessWidget {
+  final IconData icon;
+  final double size;
+  final Color background;
+  final Color iconColor;
+  final VoidCallback onTap;
+
+  const _RoundIconButton({
+    required this.icon,
+    required this.size,
+    required this.background,
+    required this.iconColor,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -378,14 +563,70 @@ class _CircleButton extends StatelessWidget {
         onTap();
       },
       child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.4),
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        width: size,
+        height: size,
+        decoration: BoxDecoration(color: background, shape: BoxShape.circle),
+        child: Icon(icon, color: iconColor, size: size * 0.5),
+      ),
+    );
+  }
+}
+
+class _StopFab extends StatefulWidget {
+  final VoidCallback onTap;
+  const _StopFab({required this.onTap});
+
+  @override
+  State<_StopFab> createState() => _StopFabState();
+}
+
+class _StopFabState extends State<_StopFab>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+    );
+    _scale = Tween<double>(
+      begin: 1.0,
+      end: 0.9,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) {
+        _controller.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _controller.reverse(),
+      child: ScaleTransition(
+        scale: _scale,
+        child: Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            gradient: AppGradients.accent,
+            shape: BoxShape.circle,
+            boxShadow: AppShadows.glowCyan,
+          ),
+          child: const Center(
+            child: Icon(Icons.stop_rounded, color: AppColors.white, size: 28),
+          ),
         ),
-        child: Icon(icon, color: AppColors.white, size: 20),
       ),
     );
   }
