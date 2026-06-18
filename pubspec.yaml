@@ -27,8 +27,8 @@ dependencies:
   shared_preferences: ^2.2.3
 
   # Camera & ML
-    
-  tflite_flutter: ^0.12.1
+  hand_detection: ^3.1.2
+  opencv_dart: ^2.2.1+4
 
   # Text to speech
   flutter_tts: ^4.0.2
