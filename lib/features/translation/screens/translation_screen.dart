@@ -9,7 +9,8 @@ import '../../../core/services/camera_service.dart';
 import 'package:hand_detection/hand_detection.dart';
 import '../../../core/services/hand_landmark_service.dart';
 import '../widgets/landmark_painter.dart';
-import '../services/prediction_service.dart'; // ← added
+import '../services/prediction_service.dart';
+import '../../../core/services/tts_service.dart';
 
 class TranslationScreen extends StatefulWidget {
   const TranslationScreen({super.key});
@@ -51,6 +52,7 @@ class _TranslationScreenState extends State<TranslationScreen>
     try {
       await CameraService.instance.initialize(useFrontCamera: _isFrontCamera);
       await HandLandmarkService.instance.initialize();
+      await TtsService.instance.initialize();
       setState(() => _isLoading = false);
       _startStream();
     } catch (e) {
@@ -121,7 +123,11 @@ class _TranslationScreenState extends State<TranslationScreen>
 
   void _toggleMute() {
     HapticFeedback.lightImpact();
-    setState(() => _isMuted = !_isMuted);
+    setState(() {
+      _isMuted = !_isMuted;
+      TtsService.instance.setEnabled(!_isMuted);
+    });
+    if (_isMuted) TtsService.instance.stop();
   }
 
   void _stopTranslation() {
@@ -149,6 +155,7 @@ class _TranslationScreenState extends State<TranslationScreen>
     WidgetsBinding.instance.removeObserver(this);
     CameraService.instance.controller?.stopImageStream();
     HandLandmarkService.instance.dispose();
+    TtsService.instance.stop();
     CameraService.instance.dispose();
     super.dispose();
   }
@@ -535,18 +542,16 @@ class _TranslationScreenState extends State<TranslationScreen>
               icon: Icons.add_rounded,
               label: 'Add letter',
               onTap: () {
-                setState(() {
-                  _builtSentence += prediction.label.toUpperCase();
-                });
+                final letter = prediction.label.toUpperCase();
+                setState(() => _builtSentence += letter);
+                TtsService.instance.speakLetter(letter);
               },
             ),
             const SizedBox(width: AppSpacing.s2),
             _GlassButton(
               icon: Icons.space_bar_rounded,
               label: 'Space',
-              onTap: () {
-                setState(() => _builtSentence += ' ');
-              },
+              onTap: () => setState(() => _builtSentence += ' '),
             ),
             const SizedBox(width: AppSpacing.s2),
             _GlassButton(
@@ -565,9 +570,22 @@ class _TranslationScreenState extends State<TranslationScreen>
             ),
             const SizedBox(width: AppSpacing.s2),
             _GlassButton(
+              icon: Icons.record_voice_over_rounded,
+              label: 'Speak',
+              onTap: () {
+                if (_builtSentence.isNotEmpty) {
+                  TtsService.instance.speakSentence(_builtSentence);
+                }
+              },
+            ),
+            const SizedBox(width: AppSpacing.s2),
+            _GlassButton(
               icon: Icons.clear_rounded,
               label: 'Clear',
-              onTap: () => setState(() => _builtSentence = ''),
+              onTap: () {
+                TtsService.instance.stop();
+                setState(() => _builtSentence = '');
+              },
             ),
           ],
         ),
