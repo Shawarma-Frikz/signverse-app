@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../core/services/tts_service.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -156,6 +157,14 @@ class SettingsScreen extends ConsumerWidget {
                             onChanged: (_) {},
                             activeThumbColor: AppColors.accent500,
                           ),
+                        ),
+                        _SettingsTile(
+                          icon: Icons.speed_rounded,
+                          label: 'Speech Speed',
+                          trailing: SizedBox(
+                            width: 120,
+                            child: _TtsSpeedSlider(),
+                          ),
                           isLast: true,
                         ),
                       ],
@@ -262,6 +271,47 @@ class _SettingsTile extends StatelessWidget {
             indent: AppSpacing.s4,
             endIndent: AppSpacing.s4,
           ),
+      ],
+    );
+  }
+}
+
+class _TtsSpeedSlider extends StatefulWidget {
+  @override
+  State<_TtsSpeedSlider> createState() => _TtsSpeedSliderState();
+}
+
+class _TtsSpeedSliderState extends State<_TtsSpeedSlider> {
+  double _rate = 0.5;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Icon(
+          Icons.slow_motion_video_rounded,
+          color: AppColors.primary300,
+          size: 14,
+        ),
+        Expanded(
+          child: Slider(
+            value: _rate,
+            min: 0.2,
+            max: 0.9,
+            divisions: 7,
+            activeColor: AppColors.accent500,
+            inactiveColor: AppColors.primary400.withValues(alpha: 0.3),
+            onChanged: (v) {
+              setState(() => _rate = v);
+              TtsService.instance.setRate(v);
+            },
+          ),
+        ),
+        const Icon(
+          Icons.fast_forward_rounded,
+          color: AppColors.primary300,
+          size: 14,
+        ),
       ],
     );
   }
