@@ -9,6 +9,7 @@ import '../../../core/services/camera_service.dart';
 import 'package:hand_detection/hand_detection.dart';
 import '../../../core/services/hand_landmark_service.dart';
 import '../widgets/landmark_painter.dart';
+import '../services/prediction_service.dart'; // ← added
 
 class TranslationScreen extends StatefulWidget {
   const TranslationScreen({super.key});
@@ -30,11 +31,10 @@ class _TranslationScreenState extends State<TranslationScreen>
   Size _imageSize = Size.zero;
   bool _isStreaming = false;
 
-  // Placeholder prediction state — wired to API in next sprint step
-  String? _detectedWord;
-  double _confidence = 0.0;
-  String _translationFr = '';
-  String _translationAr = '';
+  // ── Prediction state ─────────────────────────────────────────
+  PredictionResult? _prediction;
+  String _builtSentence = '';
+  final List<String> _wordBuffer = [];
 
   @override
   void initState() {
@@ -70,24 +70,36 @@ class _TranslationScreenState extends State<TranslationScreen>
     _isStreaming = true;
 
     controller.startImageStream((image) async {
-      // FIX: Removed the second argument (sensorOrientation)
       final result = await HandLandmarkService.instance.detect(
         image,
         sensorOrientation: controller.description.sensorOrientation,
         isFrontCamera: _isFrontCamera,
       );
+
       if (result == null || !mounted) return;
+
+      // ── Update landmark overlay ──────────────────────────────
+      final orientation = controller.description.sensorOrientation;
+      final isSwapped = orientation == 90 || orientation == 270;
 
       setState(() {
         _detectedHands = result.hands;
-
-        final orientation = controller.description.sensorOrientation;
-        final isSwapped = orientation == 90 || orientation == 270;
-
         _imageSize = isSwapped
             ? Size(image.height.toDouble(), image.width.toDouble())
             : Size(image.width.toDouble(), image.height.toDouble());
       });
+
+      // ── Send to API ──────────────────────────────────────────
+      final flat = result.flatLandmarks;
+      if (flat == null || flat.length != 63) return;
+
+      final prediction = await PredictionService.instance.predictAlphabet(flat);
+      if (prediction == null || !mounted) return;
+
+      // Only accept predictions above 70% confidence
+      if (prediction.confidence < 0.70) return;
+
+      setState(() => _prediction = prediction);
     });
   }
 
@@ -101,7 +113,7 @@ class _TranslationScreenState extends State<TranslationScreen>
 
     _isFrontCamera = !_isFrontCamera;
     await CameraService.instance.switchCamera();
-    await HandLandmarkService.instance.reset(); // ← the actual fix
+    await HandLandmarkService.instance.reset();
 
     setState(() => _isLoading = false);
     _startStream();
@@ -360,7 +372,7 @@ class _TranslationScreenState extends State<TranslationScreen>
 
   // ── Translation output (glass card) ───────────────────────────
   Widget _buildTranslationOutput() {
-    final hasResult = _detectedWord != null;
+    final prediction = _prediction;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -373,87 +385,233 @@ class _TranslationScreenState extends State<TranslationScreen>
         borderRadius: AppRadius.xlBorder,
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
             width: double.infinity,
             padding: const EdgeInsets.all(AppSpacing.s4),
             decoration: BoxDecoration(
-              color: AppColors.white.withValues(alpha: 0.08),
+              color: prediction != null
+                  ? AppColors.accent500.withValues(alpha: 0.12)
+                  : AppColors.white.withValues(alpha: 0.08),
               borderRadius: AppRadius.xlBorder,
-              border: Border.all(color: AppColors.white.withValues(alpha: 0.1)),
+              border: Border.all(
+                color: prediction != null
+                    ? AppColors.accent500.withValues(alpha: 0.3)
+                    : AppColors.white.withValues(alpha: 0.1),
+              ),
             ),
-            child: hasResult
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'DETECTED',
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: AppColors.white.withValues(alpha: 0.4),
-                              fontSize: 10,
-                            ),
-                          ),
-                          Text(
-                            '${(_confidence * 100).toStringAsFixed(1)}%',
-                            style: AppTextStyles.mono.copyWith(
-                              color: AppColors.accent400,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.s1),
-                      Text(
-                        '"$_detectedWord"',
-                        style: AppTextStyles.headlineLarge.copyWith(
-                          fontSize: 20,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '$_translationFr / $_translationAr',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.white.withValues(alpha: 0.5),
-                        ),
-                      ),
-                    ],
-                  )
-                : Row(
-                    children: [
-                      const Icon(
-                        Icons.front_hand_rounded,
-                        color: AppColors.accent300,
-                        size: 22,
-                      ),
-                      const SizedBox(width: AppSpacing.s3),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Show a sign to begin',
-                              style: AppTextStyles.labelLarge.copyWith(
-                                color: AppColors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Position your hand inside the frame',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.white.withValues(alpha: 0.5),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+            child: prediction != null
+                ? _buildPredictionContent(prediction)
+                : _buildEmptyHint(),
           ),
         ),
       ),
     ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.15);
+  }
+
+  Widget _buildPredictionContent(PredictionResult prediction) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ── Main prediction ──────────────────────────────────────
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // Big letter
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                gradient: AppGradients.accent,
+                borderRadius: AppRadius.lgBorder,
+                boxShadow: AppShadows.glowCyan,
+              ),
+              child: Center(
+                child: Text(
+                  prediction.label.toUpperCase(),
+                  style: AppTextStyles.displayMedium.copyWith(
+                    color: AppColors.white,
+                    fontSize: 32,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.s3),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Confidence bar
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: AppRadius.fullBorder,
+                          child: LinearProgressIndicator(
+                            value: prediction.confidence,
+                            backgroundColor: AppColors.primary400.withValues(
+                              alpha: 0.3,
+                            ),
+                            valueColor: AlwaysStoppedAnimation(
+                              _confidenceColor(prediction.confidence),
+                            ),
+                            minHeight: 4,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.s2),
+                      Text(
+                        '${(prediction.confidence * 100).toStringAsFixed(1)}%',
+                        style: AppTextStyles.mono.copyWith(
+                          color: _confidenceColor(prediction.confidence),
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.s2),
+                  // Top 3 alternatives
+                  Row(
+                    children: prediction.top5
+                        .skip(1)
+                        .take(3)
+                        .map(
+                          (c) => Container(
+                            margin: const EdgeInsets.only(right: AppSpacing.s1),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.s2,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.white.withValues(alpha: 0.07),
+                              borderRadius: AppRadius.fullBorder,
+                            ),
+                            child: Text(
+                              '${c.label.toUpperCase()} ${(c.confidence * 100).toInt()}%',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.white.withValues(alpha: 0.5),
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        // ── Sentence builder ─────────────────────────────────────
+        if (_builtSentence.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.s3),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.s3,
+              vertical: AppSpacing.s2,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.white.withValues(alpha: 0.05),
+              borderRadius: AppRadius.mdBorder,
+            ),
+            child: Text(
+              _builtSentence,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.white,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+
+        // ── Action buttons ───────────────────────────────────────
+        const SizedBox(height: AppSpacing.s3),
+        Row(
+          children: [
+            _GlassButton(
+              icon: Icons.add_rounded,
+              label: 'Add letter',
+              onTap: () {
+                setState(() {
+                  _builtSentence += prediction.label.toUpperCase();
+                });
+              },
+            ),
+            const SizedBox(width: AppSpacing.s2),
+            _GlassButton(
+              icon: Icons.space_bar_rounded,
+              label: 'Space',
+              onTap: () {
+                setState(() => _builtSentence += ' ');
+              },
+            ),
+            const SizedBox(width: AppSpacing.s2),
+            _GlassButton(
+              icon: Icons.backspace_outlined,
+              label: 'Delete',
+              onTap: () {
+                if (_builtSentence.isNotEmpty) {
+                  setState(
+                    () => _builtSentence = _builtSentence.substring(
+                      0,
+                      _builtSentence.length - 1,
+                    ),
+                  );
+                }
+              },
+            ),
+            const SizedBox(width: AppSpacing.s2),
+            _GlassButton(
+              icon: Icons.clear_rounded,
+              label: 'Clear',
+              onTap: () => setState(() => _builtSentence = ''),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyHint() {
+    return Row(
+      children: [
+        const Icon(
+          Icons.front_hand_rounded,
+          color: AppColors.accent300,
+          size: 22,
+        ),
+        const SizedBox(width: AppSpacing.s3),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Show a sign to begin',
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.white,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Position your hand inside the frame',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.white.withValues(alpha: 0.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _confidenceColor(double confidence) {
+    if (confidence >= 0.90) return AppColors.success400;
+    if (confidence >= 0.75) return AppColors.accent400;
+    return AppColors.warning400;
   }
 
   // ── Bottom controls ────────────────────────────────────────────
@@ -492,6 +650,53 @@ class _TranslationScreenState extends State<TranslationScreen>
 }
 
 // ── Reusable bits ────────────────────────────────────────────────
+
+class _GlassButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _GlassButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.s2,
+          vertical: AppSpacing.s2,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.white.withValues(alpha: 0.08),
+          borderRadius: AppRadius.mdBorder,
+          border: Border.all(color: AppColors.white.withValues(alpha: 0.1)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: AppColors.white, size: 16),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: AppTextStyles.bodySmall.copyWith(
+                fontSize: 9,
+                color: AppColors.white.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _IconTapTarget extends StatelessWidget {
   final IconData icon;
