@@ -11,6 +11,7 @@ import '../../../core/services/hand_landmark_service.dart';
 import '../widgets/landmark_painter.dart';
 import '../services/prediction_service.dart';
 import '../../../core/services/tts_service.dart';
+import '../../history/repositories/history_repository.dart';
 
 class TranslationScreen extends StatefulWidget {
   const TranslationScreen({super.key});
@@ -36,6 +37,11 @@ class _TranslationScreenState extends State<TranslationScreen>
   PredictionResult? _prediction;
   String _builtSentence = '';
   final List<String> _wordBuffer = [];
+
+  // ── History state ────────────────────────────────────────────
+  final HistoryRepository _historyRepo = HistoryRepository();
+  final List<String> _detectedSigns = [];
+  DateTime? _sessionStart;
 
   @override
   void initState() {
@@ -133,6 +139,67 @@ class _TranslationScreenState extends State<TranslationScreen>
   void _stopTranslation() {
     HapticFeedback.mediumImpact();
     Navigator.maybePop(context);
+  }
+
+  Future<void> _saveTranslation(double confidence) async {
+    if (_builtSentence.trim().isEmpty) return;
+
+    final durationMs = _sessionStart != null
+        ? DateTime.now().difference(_sessionStart!).inMilliseconds
+        : null;
+
+    try {
+      await _historyRepo.saveTranslation(
+        inputType: 'alphabet',
+        detectedSigns: _detectedSigns.join(','),
+        resultText: _builtSentence.trim(),
+        confidence: confidence,
+        durationMs: durationMs,
+      );
+
+      if (!mounted) return;
+      HapticFeedback.mediumImpact();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                Icons.check_circle_rounded,
+                color: AppColors.success400,
+                size: 18,
+              ),
+              const SizedBox(width: AppSpacing.s2),
+              Text('Translation saved!', style: AppTextStyles.bodyMedium),
+            ],
+          ),
+          backgroundColor: AppColors.surfaceVariant,
+          behavior: SnackBarBehavior.floating,
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.lgBorder),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // Reset session
+      setState(() {
+        _builtSentence = '';
+        _detectedSigns.clear();
+        _sessionStart = null;
+        _prediction = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Failed to save. Check your connection.',
+            style: AppTextStyles.bodyMedium,
+          ),
+          backgroundColor: AppColors.error500,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
@@ -543,7 +610,11 @@ class _TranslationScreenState extends State<TranslationScreen>
               label: 'Add letter',
               onTap: () {
                 final letter = prediction.label.toUpperCase();
-                setState(() => _builtSentence += letter);
+                setState(() {
+                  _builtSentence += letter;
+                  _detectedSigns.add(letter);
+                  _sessionStart ??= DateTime.now();
+                });
                 TtsService.instance.speakLetter(letter);
               },
             ),
@@ -580,11 +651,21 @@ class _TranslationScreenState extends State<TranslationScreen>
             ),
             const SizedBox(width: AppSpacing.s2),
             _GlassButton(
+              icon: Icons.save_rounded,
+              label: 'Save',
+              onTap: () => _saveTranslation(prediction.confidence),
+            ),
+            const SizedBox(width: AppSpacing.s2),
+            _GlassButton(
               icon: Icons.clear_rounded,
               label: 'Clear',
               onTap: () {
                 TtsService.instance.stop();
-                setState(() => _builtSentence = '');
+                setState(() {
+                  _builtSentence = '';
+                  _detectedSigns.clear();
+                  _sessionStart = null;
+                });
               },
             ),
           ],
