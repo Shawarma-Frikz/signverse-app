@@ -45,7 +45,7 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.secondary500.withOpacity(0.07),
+                    AppColors.secondary500.withValues(alpha: 0.07),
                     Colors.transparent,
                   ],
                 ),
@@ -333,7 +333,7 @@ class _CategorySection extends StatelessWidget {
                       vertical: 1,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.accent500.withOpacity(0.1),
+                      color: AppColors.accent500.withValues(alpha: 0.1),
                       borderRadius: AppRadius.fullBorder,
                     ),
                     child: Text(
@@ -442,7 +442,7 @@ class _SignCardState extends State<_SignCard>
                 color: AppColors.surface,
                 borderRadius: AppRadius.xlBorder,
                 border: Border.all(
-                  color: AppColors.primary400.withOpacity(0.2),
+                  color: AppColors.primary400.withValues(alpha: 0.2),
                 ),
               ),
               child: Stack(
@@ -490,7 +490,7 @@ class _SignCardState extends State<_SignCard>
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.warning500.withOpacity(0.15),
+                          color: AppColors.warning500.withValues(alpha: 0.15),
                           borderRadius: AppRadius.smBorder,
                         ),
                         child: const Icon(
@@ -510,7 +510,7 @@ class _SignCardState extends State<_SignCard>
                       height: 8,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: _difficultyColor.withOpacity(0.7),
+                        color: _difficultyColor.withValues(alpha: 0.7),
                       ),
                     ),
                   ),
@@ -559,13 +559,13 @@ class _CategoryChip extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.accent500.withOpacity(0.15)
+              ? AppColors.accent500.withValues(alpha: 0.15)
               : AppColors.surface,
           borderRadius: AppRadius.fullBorder,
           border: Border.all(
             color: isSelected
-                ? AppColors.accent500.withOpacity(0.5)
-                : AppColors.primary400.withOpacity(0.3),
+                ? AppColors.accent500.withValues(alpha: 0.5)
+                : AppColors.primary400.withValues(alpha: 0.3),
           ),
         ),
         child: Row(

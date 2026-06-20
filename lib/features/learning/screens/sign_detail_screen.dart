@@ -15,9 +15,9 @@ class SignDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final sign = SignDatabase.findById(signId);
     if (sign == null) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: AppColors.background,
-        body: const Center(child: Text('Sign not found')),
+        body: Center(child: Text('Sign not found')),
       );
     }
     return _SignDetailView(sign: sign);
@@ -57,7 +57,7 @@ class _SignDetailView extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.accent500.withOpacity(0.08),
+                    AppColors.accent500.withValues(alpha: 0.08),
                     Colors.transparent,
                   ],
                 ),
@@ -129,7 +129,7 @@ class _SignDetailView extends StatelessWidget {
                         ),
                         borderRadius: AppRadius.xl2Border,
                         border: Border.all(
-                          color: AppColors.accent500.withOpacity(0.25),
+                          color: AppColors.accent500.withValues(alpha: 0.25),
                         ),
                         boxShadow: AppShadows.glowCyan,
                       ),
@@ -324,9 +324,9 @@ class _Badge extends StatelessWidget {
         vertical: AppSpacing.s1,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: AppRadius.fullBorder,
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -357,7 +357,7 @@ class _InfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.xlBorder,
-        border: Border.all(color: AppColors.primary400.withOpacity(0.2)),
+        border: Border.all(color: AppColors.primary400.withValues(alpha: 0.2)),
       ),
       child: Column(children: children),
     );
@@ -391,7 +391,7 @@ class _InfoRow extends StatelessWidget {
               Container(
                 width: 36,
                 height: 36,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.surfaceVariant,
                   borderRadius: AppRadius.mdBorder,
                 ),
@@ -417,7 +417,7 @@ class _InfoRow extends StatelessWidget {
         if (!isLast)
           Divider(
             height: 1,
-            color: AppColors.primary400.withOpacity(0.2),
+            color: AppColors.primary400.withValues(alpha: 0.2),
             indent: AppSpacing.s4,
             endIndent: AppSpacing.s4,
           ),
@@ -437,9 +437,9 @@ class _TipTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: AppSpacing.s2),
       padding: const EdgeInsets.all(AppSpacing.s3),
       decoration: BoxDecoration(
-        color: AppColors.accent500.withOpacity(0.06),
+        color: AppColors.accent500.withValues(alpha: 0.06),
         borderRadius: AppRadius.lgBorder,
-        border: Border.all(color: AppColors.accent500.withOpacity(0.15)),
+        border: Border.all(color: AppColors.accent500.withValues(alpha: 0.15)),
       ),
       child: Row(
         children: [
@@ -447,7 +447,7 @@ class _TipTile extends StatelessWidget {
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: AppColors.accent500.withOpacity(0.15),
+              color: AppColors.accent500.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Center(
