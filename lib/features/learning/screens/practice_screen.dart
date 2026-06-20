@@ -69,9 +69,11 @@ class PracticeScreen extends ConsumerWidget {
               vertical: AppSpacing.s1,
             ),
             decoration: BoxDecoration(
-              color: AppColors.success500.withOpacity(0.1),
+              color: AppColors.success500.withValues(alpha: 0.1),
               borderRadius: AppRadius.fullBorder,
-              border: Border.all(color: AppColors.success500.withOpacity(0.3)),
+              border: Border.all(
+                color: AppColors.success500.withValues(alpha: 0.3),
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -108,7 +110,7 @@ class PracticeScreen extends ConsumerWidget {
         borderRadius: AppRadius.fullBorder,
         child: LinearProgressIndicator(
           value: state.progress,
-          backgroundColor: AppColors.primary400.withOpacity(0.2),
+          backgroundColor: AppColors.primary400.withValues(alpha: 0.2),
           valueColor: const AlwaysStoppedAnimation(AppColors.accent500),
           minHeight: 4,
         ),
@@ -128,7 +130,9 @@ class PracticeScreen extends ConsumerWidget {
             colors: [Color(0xFF1A2456), Color(0xFF0F1535)],
           ),
           borderRadius: AppRadius.xl2Border,
-          border: Border.all(color: AppColors.accent500.withOpacity(0.25)),
+          border: Border.all(
+            color: AppColors.accent500.withValues(alpha: 0.25),
+          ),
           boxShadow: AppShadows.glowCyan,
         ),
         child: Padding(
@@ -191,10 +195,10 @@ class PracticeScreen extends ConsumerWidget {
                   vertical: AppSpacing.s2,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.accent500.withOpacity(0.1),
+                  color: AppColors.accent500.withValues(alpha: 0.1),
                   borderRadius: AppRadius.fullBorder,
                   border: Border.all(
-                    color: AppColors.accent500.withOpacity(0.3),
+                    color: AppColors.accent500.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -225,10 +229,10 @@ class PracticeScreen extends ConsumerWidget {
                     vertical: AppSpacing.s1,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.warning500.withOpacity(0.1),
+                    color: AppColors.warning500.withValues(alpha: 0.1),
                     borderRadius: AppRadius.fullBorder,
                     border: Border.all(
-                      color: AppColors.warning500.withOpacity(0.3),
+                      color: AppColors.warning500.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(
@@ -258,7 +262,7 @@ class PracticeScreen extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.s3),
                   decoration: BoxDecoration(
-                    color: AppColors.white.withOpacity(0.04),
+                    color: AppColors.white.withValues(alpha: 0.04),
                     borderRadius: AppRadius.lgBorder,
                   ),
                   child: Row(
@@ -403,9 +407,9 @@ class _AnswerButtonState extends State<_AnswerButton>
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.s4),
           decoration: BoxDecoration(
-            color: widget.color.withOpacity(0.1),
+            color: widget.color.withValues(alpha: 0.1),
             borderRadius: AppRadius.lgBorder,
-            border: Border.all(color: widget.color.withOpacity(0.4)),
+            border: Border.all(color: widget.color.withValues(alpha: 0.4)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -477,7 +481,7 @@ class _ResultScreen extends StatelessWidget {
                   color: AppColors.surface,
                   borderRadius: AppRadius.xl2Border,
                   border: Border.all(
-                    color: AppColors.accent500.withOpacity(0.2),
+                    color: AppColors.accent500.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Column(
@@ -493,7 +497,7 @@ class _ResultScreen extends StatelessWidget {
                         Container(
                           width: 1,
                           height: 40,
-                          color: AppColors.primary400.withOpacity(0.3),
+                          color: AppColors.primary400.withValues(alpha: 0.3),
                         ),
                         _ScoreStat(
                           value: '${state.incorrect}',
@@ -503,7 +507,7 @@ class _ResultScreen extends StatelessWidget {
                         Container(
                           width: 1,
                           height: 40,
-                          color: AppColors.primary400.withOpacity(0.3),
+                          color: AppColors.primary400.withValues(alpha: 0.3),
                         ),
                         _ScoreStat(
                           value: '${(pct * 100).toInt()}%',
@@ -517,7 +521,9 @@ class _ResultScreen extends StatelessWidget {
                       borderRadius: AppRadius.fullBorder,
                       child: LinearProgressIndicator(
                         value: pct,
-                        backgroundColor: AppColors.primary400.withOpacity(0.2),
+                        backgroundColor: AppColors.primary400.withValues(
+                          alpha: 0.2,
+                        ),
                         valueColor: AlwaysStoppedAnimation(
                           pct >= 0.8
                               ? AppColors.success400
