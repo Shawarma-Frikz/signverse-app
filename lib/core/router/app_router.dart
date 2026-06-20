@@ -7,6 +7,9 @@ import '../../features/home/screens/home_screen.dart';
 import '../../features/translation/screens/translation_screen.dart';
 import '../../features/history/screens/history_screen.dart';
 import '../../features/learning/screens/learning_screen.dart';
+import '../../features/learning/screens/sign_detail_screen.dart';
+import '../../features/learning/screens/practice_screen.dart';
+import '../../features/learning/models/sign_model.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../../features/auth/screens/login_screen.dart';
@@ -178,6 +181,31 @@ class AppRouter {
                   path: '/learn',
                   pageBuilder: (context, state) =>
                       const NoTransitionPage(child: LearningScreen()),
+                  routes: [
+                    GoRoute(
+                      path: ':signId',
+                      pageBuilder: (context, state) => CustomTransitionPage(
+                        child: SignDetailScreen(
+                          signId: state.pathParameters['signId']!,
+                        ),
+                        transitionsBuilder:
+                            (context, animation, secondary, child) =>
+                                SlideTransition(
+                                  position:
+                                      Tween<Offset>(
+                                        begin: const Offset(1, 0),
+                                        end: Offset.zero,
+                                      ).animate(
+                                        CurvedAnimation(
+                                          parent: animation,
+                                          curve: Curves.easeOutCubic,
+                                        ),
+                                      ),
+                                  child: child,
+                                ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -191,6 +219,30 @@ class AppRouter {
               ],
             ),
           ],
+        ),
+
+        GoRoute(
+          path: '/learn/practice',
+          pageBuilder: (context, state) {
+            final signs = state.extra as List<SignModel>;
+            return CustomTransitionPage(
+              child: PracticeScreen(signs: signs),
+              transitionsBuilder: (context, animation, secondary, child) =>
+                  SlideTransition(
+                    position:
+                        Tween<Offset>(
+                          begin: const Offset(0, 1),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
+                          ),
+                        ),
+                    child: child,
+                  ),
+            );
+          },
         ),
       ],
     );
