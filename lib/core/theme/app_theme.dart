@@ -46,6 +46,7 @@ class AppColors {
   static const Color warning600 = Color(0xFFF57F17);
   static const Color warning500 = Color(0xFFFFC107);
   static const Color warning400 = Color(0xFFFFCA28);
+  static const Color warning300 = Color(0xFFFFD54F);
   static const Color warning100 = Color(0xFFFFF9C4);
 
   static const Color error600 = Color(0xFFC62828);

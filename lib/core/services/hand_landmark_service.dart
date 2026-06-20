@@ -15,7 +15,7 @@ class HandLandmarkService {
       mode: HandMode.boxesAndLandmarks,
       detectorConf: 0.5,
       minLandmarkScore: 0.5,
-      performanceConfig: PerformanceConfig.xnnpack(),
+      performanceConfig: const PerformanceConfig.xnnpack(),
     );
   }
 
@@ -114,7 +114,7 @@ class HandLandmarkService {
         sensorOrientation: sensorOrientation,
         isFrontCamera: isFrontCamera,
       );
-      final hands = await _detector!.detectOnMat(mat);
+      final hands = await _detector!.detectFromMat(mat);
 
       if (hands.isEmpty || !hands.first.hasLandmarks) {
         return (hands: hands, flatLandmarks: null);

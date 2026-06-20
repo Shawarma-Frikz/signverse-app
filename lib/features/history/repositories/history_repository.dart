@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/services/connectivity_service.dart';
 import '../models/translation_model.dart';
 
 class HistoryRepository {
@@ -12,6 +13,9 @@ class HistoryRepository {
     double? confidence,
     int? durationMs,
   }) async {
+    if (!ConnectivityService.instance.isOnline) {
+      throw Exception('No internet connection — translation not saved');
+    }
     final response = await _dio.post(
       '/translations/',
       data: {
@@ -29,6 +33,9 @@ class HistoryRepository {
     int skip = 0,
     int limit = 20,
   }) async {
+    if (!ConnectivityService.instance.isOnline) {
+      return []; // Return empty list gracefully when offline
+    }
     final response = await _dio.get(
       '/translations/',
       queryParameters: {'skip': skip, 'limit': limit},

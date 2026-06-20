@@ -12,6 +12,7 @@ import '../widgets/landmark_painter.dart';
 import '../services/prediction_service.dart';
 import '../../../core/services/tts_service.dart';
 import '../../history/repositories/history_repository.dart';
+import '../../../core/services/connectivity_service.dart';
 
 class TranslationScreen extends StatefulWidget {
   const TranslationScreen({super.key});
@@ -33,8 +34,14 @@ class _TranslationScreenState extends State<TranslationScreen>
   Size _imageSize = Size.zero;
   bool _isStreaming = false;
 
+  // ── No-hand timeout ──────────────────────────────────────────
+  DateTime? _lastHandSeen;
+  bool _showNoHandWarning = false;
+  static const _noHandTimeoutMs = 2000;
+
   // ── Prediction state ─────────────────────────────────────────
   PredictionResult? _prediction;
+  double _lastRawConfidence = 0.0;
   String _builtSentence = '';
   final List<String> _wordBuffer = [];
 
@@ -95,6 +102,17 @@ class _TranslationScreenState extends State<TranslationScreen>
         _imageSize = isSwapped
             ? Size(image.height.toDouble(), image.width.toDouble())
             : Size(image.width.toDouble(), image.height.toDouble());
+
+        // ── No-hand tracking ──────────────────────────────────
+        if (result.hands.isNotEmpty) {
+          _lastHandSeen = DateTime.now();
+          _showNoHandWarning = false;
+        } else {
+          final elapsed = _lastHandSeen != null
+              ? DateTime.now().difference(_lastHandSeen!).inMilliseconds
+              : _noHandTimeoutMs + 1;
+          _showNoHandWarning = elapsed > _noHandTimeoutMs;
+        }
       });
 
       // ── Send to API ──────────────────────────────────────────
@@ -105,6 +123,7 @@ class _TranslationScreenState extends State<TranslationScreen>
       if (prediction == null || !mounted) return;
 
       // Only accept predictions above 70% confidence
+      setState(() => _lastRawConfidence = prediction.confidence);
       if (prediction.confidence < 0.70) return;
 
       setState(() => _prediction = prediction);
@@ -143,6 +162,33 @@ class _TranslationScreenState extends State<TranslationScreen>
 
   Future<void> _saveTranslation(double confidence) async {
     if (_builtSentence.trim().isEmpty) return;
+
+    // ── Offline guard ──────────────────────────────────────────────
+    if (!ConnectivityService.instance.isOnline) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                Icons.wifi_off_rounded,
+                color: AppColors.warning400,
+                size: 18,
+              ),
+              const SizedBox(width: AppSpacing.s2),
+              Text(
+                'You\'re offline — translation not saved',
+                style: AppTextStyles.bodyMedium,
+              ),
+            ],
+          ),
+          backgroundColor: AppColors.surfaceVariant,
+          behavior: SnackBarBehavior.floating,
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.lgBorder),
+        ),
+      );
+      return;
+    }
 
     final durationMs = _sessionStart != null
         ? DateTime.now().difference(_sessionStart!).inMilliseconds
@@ -324,12 +370,23 @@ class _TranslationScreenState extends State<TranslationScreen>
       fit: StackFit.expand,
       children: [
         Center(child: CameraPreview(controller)),
+
+        // Landmark overlay
         if (_detectedHands.isNotEmpty)
           CustomPaint(
             painter: LandmarkPainter(
               hands: _detectedHands,
               imageSize: _imageSize,
             ),
+          ),
+
+        // No-hand warning overlay
+        if (_showNoHandWarning)
+          Positioned(
+            top: AppSpacing.s4,
+            left: AppSpacing.s4,
+            right: AppSpacing.s4,
+            child: _NoHandBanner(),
           ),
       ],
     );
@@ -447,6 +504,12 @@ class _TranslationScreenState extends State<TranslationScreen>
   // ── Translation output (glass card) ───────────────────────────
   Widget _buildTranslationOutput() {
     final prediction = _prediction;
+    final hasHand = _detectedHands.isNotEmpty;
+    final isLowConf =
+        hasHand &&
+        _lastRawConfidence > 0 &&
+        _lastRawConfidence < 0.70 &&
+        prediction == null;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -464,23 +527,86 @@ class _TranslationScreenState extends State<TranslationScreen>
             width: double.infinity,
             padding: const EdgeInsets.all(AppSpacing.s4),
             decoration: BoxDecoration(
-              color: prediction != null
+              color: isLowConf
+                  ? AppColors.warning500.withValues(alpha: 0.08)
+                  : prediction != null
                   ? AppColors.accent500.withValues(alpha: 0.12)
                   : AppColors.white.withValues(alpha: 0.08),
               borderRadius: AppRadius.xlBorder,
               border: Border.all(
-                color: prediction != null
+                color: isLowConf
+                    ? AppColors.warning500.withValues(alpha: 0.3)
+                    : prediction != null
                     ? AppColors.accent500.withValues(alpha: 0.3)
                     : AppColors.white.withValues(alpha: 0.1),
               ),
             ),
-            child: prediction != null
+            child: isLowConf
+                ? _buildLowConfHint()
+                : prediction != null
                 ? _buildPredictionContent(prediction)
                 : _buildEmptyHint(),
           ),
         ),
       ),
     ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.15);
+  }
+
+  Widget _buildLowConfHint() {
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppColors.warning500.withValues(alpha: 0.1),
+            borderRadius: AppRadius.mdBorder,
+            border: Border.all(
+              color: AppColors.warning500.withValues(alpha: 0.3),
+            ),
+          ),
+          child: const Icon(
+            Icons.help_outline_rounded,
+            color: AppColors.warning400,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.s3),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Sign unclear',
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.warning300,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Hold still and face your palm toward the camera',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.warning400.withValues(alpha: 0.8),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s2),
+              // Low confidence bar
+              ClipRRect(
+                borderRadius: AppRadius.fullBorder,
+                child: LinearProgressIndicator(
+                  value: _lastRawConfidence,
+                  backgroundColor: AppColors.primary400.withValues(alpha: 0.2),
+                  valueColor: const AlwaysStoppedAnimation(
+                    AppColors.warning400,
+                  ),
+                  minHeight: 3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildPredictionContent(PredictionResult prediction) {
@@ -749,6 +875,49 @@ class _TranslationScreenState extends State<TranslationScreen>
 }
 
 // ── Reusable bits ────────────────────────────────────────────────
+
+class _NoHandBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: AppRadius.lgBorder,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.s4,
+            vertical: AppSpacing.s3,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.5),
+            borderRadius: AppRadius.lgBorder,
+            border: Border.all(
+              color: AppColors.warning500.withValues(alpha: 0.4),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.front_hand_rounded,
+                color: AppColors.warning400,
+                size: 16,
+              ),
+              const SizedBox(width: AppSpacing.s2),
+              Text(
+                'No hand detected — show your hand',
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: AppColors.warning300,
+                  letterSpacing: 0,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).animate().fadeIn(duration: 300.ms);
+  }
+}
 
 class _GlassButton extends StatelessWidget {
   final IconData icon;
