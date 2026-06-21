@@ -19,13 +19,23 @@ import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/verify_email_screen.dart';
 import '../../features/settings/screens/profile_screen.dart';
 
+// ── Router provider — created once, never recreated ───────────────
+final routerProvider = Provider<GoRouter>((ref) {
+  return AppRouter._build(ref);
+});
+
 class AppRouter {
   AppRouter._();
 
-  static GoRouter createRouter(WidgetRef ref) {
+  static GoRouter _build(Ref ref) {
+    // Use a ChangeNotifier that listens to auth state smartly.
+    // It ignores background refreshes so the router doesn't flash to /splash.
+    final authNotifier = _AuthChangeNotifier(ref);
+
     return GoRouter(
       initialLocation: '/splash',
       debugLogDiagnostics: true,
+      refreshListenable: authNotifier,
       redirect: (context, state) {
         final authState = ref.read(authProvider);
         final isAuth = authState.status == AuthStatus.authenticated;
@@ -246,5 +256,27 @@ class AppRouter {
         ),
       ],
     );
+  }
+}
+
+// ── Auth change notifier ──────────────────────────────────────────
+// Prevents the router from reloading/flashing to /splash when settings
+// changes trigger a background refresh of the authProvider.
+class _AuthChangeNotifier extends ChangeNotifier {
+  _AuthChangeNotifier(Ref ref) {
+    ref.listen(authProvider, (previous, next) {
+      // 🚨 THE FIX: Prevent router reload during background auth refreshes.
+      // If settings change and invalidate authProvider, it temporarily
+      // becomes 'unknown' (loading). If we already have a user, this is
+      // just a background refresh, not a logout. We ignore it so the
+      // router doesn't flash to /splash.
+      if (next.status == AuthStatus.unknown && previous?.user != null) {
+        return;
+      }
+
+      if (previous?.status != next.status) {
+        notifyListeners();
+      }
+    });
   }
 }

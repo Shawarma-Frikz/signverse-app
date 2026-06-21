@@ -17,7 +17,7 @@ class HomeScreen extends ConsumerWidget {
     final name = user?.displayName ?? user?.email.split('@').first ?? 'there';
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.bgPrimary,
       body: Stack(
         children: [
           // Background ambient glows
@@ -330,10 +330,15 @@ class _HeroCardState extends State<_HeroCard>
         builder: (context, child) {
           return Container(
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF1A2456), Color(0xFF0F1535)],
+                colors: [
+                  context.isDark
+                      ? const Color(0xFF1A2456)
+                      : const Color(0xFFEEF2FF),
+                  context.bgSurface,
+                ],
               ),
               borderRadius: AppRadius.xl2Border,
               border: Border.all(
@@ -453,11 +458,9 @@ class _HeroCardState extends State<_HeroCard>
                 width: 100,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: AppColors.accent500.withValues(alpha: 0.08),
+                  color: context.bgSurface,
                   borderRadius: AppRadius.xlBorder,
-                  border: Border.all(
-                    color: AppColors.accent500.withValues(alpha: 0.15),
-                  ),
+                  border: Border.all(color: context.border),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -490,9 +493,9 @@ class _EmptyTranslations extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.s6),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.bgSurface,
         borderRadius: AppRadius.xlBorder,
-        border: Border.all(color: AppColors.primary400.withValues(alpha: 0.2)),
+        border: Border.all(color: context.border),
       ),
       child: Column(
         children: [

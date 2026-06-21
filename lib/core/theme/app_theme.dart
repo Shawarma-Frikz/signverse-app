@@ -568,3 +568,34 @@ class AppTheme {
     );
   }
 }
+
+// ── Semantic theme colors ─────────────────────────────────────────
+// Use these everywhere instead of hardcoded AppColors.
+// They automatically return the right color for light or dark mode.
+extension ThemeColors on BuildContext {
+  // Backgrounds
+  Color get bgPrimary => Theme.of(this).scaffoldBackgroundColor;
+  Color get bgSurface => Theme.of(this).colorScheme.surface;
+  Color get bgVariant => Theme.of(this).colorScheme.surfaceContainer;
+
+  // Text
+  Color get textPrimary => Theme.of(this).colorScheme.onSurface;
+  Color get textSecondary =>
+      Theme.of(this).colorScheme.onSurface.withValues(alpha: 0.6);
+  Color get textMuted =>
+      Theme.of(this).colorScheme.onSurface.withValues(alpha: 0.4);
+
+  // Accent — same in both modes
+  Color get accent => AppColors.accent500;
+  Color get accentSub => AppColors.accent300;
+
+  // Border
+  Color get border =>
+      Theme.of(this).colorScheme.onSurface.withValues(alpha: 0.1);
+
+  // Brightness helpers
+  bool get isDark => Theme.of(this).brightness == Brightness.dark;
+
+  // Glow only shows in dark mode
+  List<BoxShadow> get glowCyan => isDark ? AppShadows.glowCyan : [];
+}

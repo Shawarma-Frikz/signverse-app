@@ -46,7 +46,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     final state = ref.watch(historyProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.bgPrimary,
       body: Stack(
         children: [
           // Ambient glow
@@ -165,7 +165,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     return RefreshIndicator(
       onRefresh: () => ref.read(historyProvider.notifier).refresh(),
       color: AppColors.accent500,
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.bgSurface,
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.fromLTRB(
@@ -333,11 +333,9 @@ class _TranslationCard extends StatelessWidget {
           child: Container(
             margin: const EdgeInsets.only(bottom: AppSpacing.s3),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: context.bgSurface,
               borderRadius: AppRadius.xlBorder,
-              border: Border.all(
-                color: AppColors.primary400.withValues(alpha: 0.2),
-              ),
+              border: Border.all(color: context.border),
             ),
             child: Material(
               color: Colors.transparent,
@@ -469,9 +467,9 @@ class _DetailSheet extends StatelessWidget {
       margin: const EdgeInsets.all(AppSpacing.s3),
       padding: const EdgeInsets.all(AppSpacing.s6),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.bgSurface,
         borderRadius: AppRadius.xl2Border,
-        border: Border.all(color: AppColors.accent500.withValues(alpha: 0.2)),
+        border: Border.all(color: context.border),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -483,7 +481,7 @@ class _DetailSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.primary400.withValues(alpha: 0.4),
+                color: context.border,
                 borderRadius: AppRadius.fullBorder,
               ),
             ),
@@ -500,9 +498,7 @@ class _DetailSheet extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: AppGradients.card,
               borderRadius: AppRadius.lgBorder,
-              border: Border.all(
-                color: AppColors.accent500.withValues(alpha: 0.2),
-              ),
+              border: Border.all(color: context.border),
             ),
             child: Text(
               translation.resultText,
@@ -622,11 +618,7 @@ class _DetailRow extends StatelessWidget {
             ],
           ),
         ),
-        if (!isLast)
-          Divider(
-            height: 1,
-            color: AppColors.primary400.withValues(alpha: 0.2),
-          ),
+        if (!isLast) Divider(height: 1, color: context.border),
       ],
     );
   }
@@ -643,9 +635,9 @@ class _DeleteSheet extends StatelessWidget {
       margin: const EdgeInsets.all(AppSpacing.s3),
       padding: const EdgeInsets.all(AppSpacing.s6),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.bgSurface,
         borderRadius: AppRadius.xl2Border,
-        border: Border.all(color: AppColors.error500.withValues(alpha: 0.2)),
+        border: Border.all(color: context.border),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -655,7 +647,7 @@ class _DeleteSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.primary400.withValues(alpha: 0.4),
+                color: context.border,
                 borderRadius: AppRadius.fullBorder,
               ),
             ),
@@ -705,9 +697,7 @@ class _DeleteSheet extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.s3,
                     ),
-                    side: BorderSide(
-                      color: AppColors.primary400.withValues(alpha: 0.4),
-                    ),
+                    side: BorderSide(color: context.border),
                     shape: const RoundedRectangleBorder(
                       borderRadius: AppRadius.lgBorder,
                     ),
@@ -771,12 +761,12 @@ class _FilterChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.accent500.withValues(alpha: 0.15)
-              : AppColors.surface,
+              : context.bgSurface,
           borderRadius: AppRadius.fullBorder,
           border: Border.all(
             color: isSelected
                 ? AppColors.accent500.withValues(alpha: 0.5)
-                : AppColors.primary400.withValues(alpha: 0.3),
+                : context.border,
           ),
         ),
         child: Row(
@@ -845,11 +835,9 @@ class _SkeletonCardState extends State<_SkeletonCard>
         margin: const EdgeInsets.only(bottom: AppSpacing.s3),
         padding: const EdgeInsets.all(AppSpacing.s4),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.bgSurface,
           borderRadius: AppRadius.xlBorder,
-          border: Border.all(
-            color: AppColors.primary400.withValues(alpha: 0.2),
-          ),
+          border: Border.all(color: context.border),
         ),
         child: Row(
           children: [
@@ -857,9 +845,7 @@ class _SkeletonCardState extends State<_SkeletonCard>
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant.withValues(
-                  alpha: _shimmer.value,
-                ),
+                color: context.bgVariant.withValues(alpha: _shimmer.value),
                 borderRadius: AppRadius.lgBorder,
               ),
             ),
@@ -872,7 +858,7 @@ class _SkeletonCardState extends State<_SkeletonCard>
                     height: 14,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceVariant.withValues(
+                      color: context.bgVariant.withValues(
                         alpha: _shimmer.value,
                       ),
                       borderRadius: AppRadius.smBorder,
@@ -883,7 +869,7 @@ class _SkeletonCardState extends State<_SkeletonCard>
                     height: 10,
                     width: 140,
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceVariant.withValues(
+                      color: context.bgVariant.withValues(
                         alpha: _shimmer.value * 0.7,
                       ),
                       borderRadius: AppRadius.smBorder,

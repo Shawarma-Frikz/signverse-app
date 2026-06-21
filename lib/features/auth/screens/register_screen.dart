@@ -65,7 +65,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final isLoading = ref.watch(authProvider).isLoading;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.bgPrimary,
       body: Stack(
         children: [
           // Background decorations

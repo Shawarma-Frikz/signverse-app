@@ -48,11 +48,9 @@ class GreetingHeader extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.bgSurface,
             borderRadius: AppRadius.lgBorder,
-            border: Border.all(
-              color: AppColors.primary400.withValues(alpha: 0.3),
-            ),
+            border: Border.all(color: context.border),
           ),
           child: const Icon(
             Icons.notifications_outlined,
