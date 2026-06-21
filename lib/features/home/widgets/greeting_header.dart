@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/user_avatar.dart';
+import '../../settings/screens/profile_screen.dart';
 
-class GreetingHeader extends StatelessWidget {
+class GreetingHeader extends ConsumerWidget {
   final String name;
-
   const GreetingHeader({super.key, required this.name});
 
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch profile for avatar updates
+    final profile = ref.watch(profileProvider).valueOrNull;
+
     return Row(
       children: [
         Expanded(
@@ -26,7 +24,7 @@ class GreetingHeader extends StatelessWidget {
                   Text(
                     _getGreeting(),
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textMuted,
+                      color: context.textMuted,
                     ),
                   ),
                   const SizedBox(width: AppSpacing.s1),
@@ -54,33 +52,28 @@ class GreetingHeader extends StatelessWidget {
           ),
           child: const Icon(
             Icons.notifications_outlined,
-            color: AppColors.textSecondary,
+            color: AppColors.primary300,
             size: 20,
           ),
         ),
 
         const SizedBox(width: AppSpacing.s2),
 
-        // Avatar
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            gradient: AppGradients.accent,
-            borderRadius: AppRadius.lgBorder,
-            boxShadow: AppShadows.glowCyan,
-          ),
-          child: Center(
-            child: Text(
-              name.isNotEmpty ? name[0].toUpperCase() : 'S',
-              style: AppTextStyles.headlineMedium.copyWith(
-                color: AppColors.white,
-                fontSize: 18,
-              ),
-            ),
-          ),
+        // Avatar — synced from profile
+        UserAvatar(
+          avatarUrl: profile?.avatarUrl,
+          fallbackLetter: name.isNotEmpty ? name[0] : 'S',
+          size: 44,
+          showGlow: true,
         ),
       ],
     );
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
   }
 }
