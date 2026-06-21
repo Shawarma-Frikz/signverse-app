@@ -41,6 +41,8 @@ class UserProfile {
   final int id;
   final String email;
   final String? displayName;
+  final String? bio;
+  final String? avatarUrl;
   final String preferredLanguage;
   final bool isVerified;
   final String createdAt;
@@ -49,6 +51,8 @@ class UserProfile {
     required this.id,
     required this.email,
     this.displayName,
+    this.bio,
+    this.avatarUrl,
     required this.preferredLanguage,
     required this.isVerified,
     required this.createdAt,
@@ -58,6 +62,8 @@ class UserProfile {
     id: json['id'] as int,
     email: json['email'] as String,
     displayName: json['display_name'] as String?,
+    bio: json['bio'] as String?,
+    avatarUrl: json['avatar_url'] as String?,
     preferredLanguage: json['preferred_language'] as String,
     isVerified: json['is_verified'] as bool,
     createdAt: json['created_at'] as String,
