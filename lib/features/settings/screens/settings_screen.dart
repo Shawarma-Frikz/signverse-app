@@ -29,7 +29,7 @@ class SettingsScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: context.bgPrimary,
       body: Stack(
         children: [
           // Subtle background glow
@@ -508,7 +508,7 @@ class _SettingsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: AppRadius.xlBorder,
-        border: Border.all(color: AppColors.primary400.withValues(alpha: 0.2)),
+        border: Border.all(color: context.border),
       ),
       child: Column(children: children),
     );
@@ -564,7 +564,9 @@ class _SettingsItem extends StatelessWidget {
                     ),
                     Text(
                       subtitle,
-                      style: AppTextStyles.bodySmall.copyWith(fontSize: 12),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(fontSize: 12),
                     ),
                   ],
                 ),
@@ -864,7 +866,7 @@ class _LanguageSelector extends StatelessWidget {
                       border: Border.all(
                         color: isSelected
                             ? AppColors.accent500.withValues(alpha: 0.5)
-                            : AppColors.primary400.withValues(alpha: 0.2),
+                            : context.border,
                       ),
                     ),
                     child: Column(

@@ -23,7 +23,7 @@ class PracticeScreen extends ConsumerWidget {
     final sign = state.current!;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.bgPrimary,
       body: SafeArea(
         child: Column(
           children: [
@@ -450,7 +450,7 @@ class _ResultScreen extends StatelessWidget {
         : 'Keep practicing!';
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.bgPrimary,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.s6),
@@ -478,11 +478,9 @@ class _ResultScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.s6),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: context.bgSurface,
                   borderRadius: AppRadius.xl2Border,
-                  border: Border.all(
-                    color: AppColors.accent500.withValues(alpha: 0.2),
-                  ),
+                  border: Border.all(color: context.border),
                 ),
                 child: Column(
                   children: [
@@ -494,21 +492,13 @@ class _ResultScreen extends StatelessWidget {
                           label: 'Correct',
                           color: AppColors.success400,
                         ),
-                        Container(
-                          width: 1,
-                          height: 40,
-                          color: AppColors.primary400.withValues(alpha: 0.3),
-                        ),
+                        Container(width: 1, height: 40, color: context.border),
                         _ScoreStat(
                           value: '${state.incorrect}',
                           label: 'Missed',
                           color: AppColors.error400,
                         ),
-                        Container(
-                          width: 1,
-                          height: 40,
-                          color: AppColors.primary400.withValues(alpha: 0.3),
-                        ),
+                        Container(width: 1, height: 40, color: context.border),
                         _ScoreStat(
                           value: '${(pct * 100).toInt()}%',
                           label: 'Score',
@@ -521,9 +511,7 @@ class _ResultScreen extends StatelessWidget {
                       borderRadius: AppRadius.fullBorder,
                       child: LinearProgressIndicator(
                         value: pct,
-                        backgroundColor: AppColors.primary400.withValues(
-                          alpha: 0.2,
-                        ),
+                        backgroundColor: context.border,
                         valueColor: AlwaysStoppedAnimation(
                           pct >= 0.8
                               ? AppColors.success400

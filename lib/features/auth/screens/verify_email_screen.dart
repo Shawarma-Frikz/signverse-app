@@ -25,7 +25,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.bgPrimary,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.s6),

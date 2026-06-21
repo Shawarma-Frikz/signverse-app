@@ -105,7 +105,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final authUser = ref.watch(authProvider).user;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.bgPrimary,
       body: Stack(
         children: [
           // Background glows
@@ -564,9 +564,9 @@ class _InfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.bgSurface,
         borderRadius: AppRadius.xlBorder,
-        border: Border.all(color: AppColors.primary400.withValues(alpha: 0.2)),
+        border: Border.all(color: context.border),
       ),
       child: Column(children: items),
     );
@@ -600,8 +600,8 @@ class _InfoItem extends StatelessWidget {
               Container(
                 width: 36,
                 height: 36,
-                decoration: const BoxDecoration(
-                  color: AppColors.surfaceVariant,
+                decoration: BoxDecoration(
+                  color: context.bgVariant,
                   borderRadius: AppRadius.mdBorder,
                 ),
                 child: Icon(icon, color: AppColors.accent500, size: 18),
@@ -626,7 +626,7 @@ class _InfoItem extends StatelessWidget {
         if (!isLast)
           Divider(
             height: 1,
-            color: AppColors.primary400.withValues(alpha: 0.2),
+            color: context.border,
             indent: AppSpacing.s4,
             endIndent: AppSpacing.s4,
           ),
@@ -644,9 +644,9 @@ class _ActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.bgSurface,
         borderRadius: AppRadius.xlBorder,
-        border: Border.all(color: AppColors.primary400.withValues(alpha: 0.2)),
+        border: Border.all(color: context.border),
       ),
       child: Column(children: items),
     );
@@ -718,7 +718,7 @@ class _ActionItem extends StatelessWidget {
         if (!isLast)
           Divider(
             height: 1,
-            color: AppColors.primary400.withValues(alpha: 0.2),
+            color: context.border,
             indent: AppSpacing.s4,
             endIndent: AppSpacing.s4,
           ),
@@ -732,7 +732,7 @@ class _LogoutDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.bgSurface,
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.xl2Border),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.s6),
@@ -775,9 +775,7 @@ class _LogoutDialog extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.s3,
                       ),
-                      side: BorderSide(
-                        color: AppColors.primary400.withValues(alpha: 0.4),
-                      ),
+                      side: BorderSide(color: context.border),
                       shape: const RoundedRectangleBorder(
                         borderRadius: AppRadius.lgBorder,
                       ),

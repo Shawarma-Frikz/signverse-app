@@ -15,9 +15,9 @@ class SignDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final sign = SignDatabase.findById(signId);
     if (sign == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(child: Text('Sign not found')),
+      return Scaffold(
+        backgroundColor: context.bgPrimary,
+        body: const Center(child: Text('Sign not found')),
       );
     }
     return _SignDetailView(sign: sign);
@@ -43,7 +43,7 @@ class _SignDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.bgPrimary,
       body: Stack(
         children: [
           // Background glow
@@ -355,9 +355,9 @@ class _InfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.bgSurface,
         borderRadius: AppRadius.xlBorder,
-        border: Border.all(color: AppColors.primary400.withValues(alpha: 0.2)),
+        border: Border.all(color: context.border),
       ),
       child: Column(children: children),
     );
@@ -391,8 +391,8 @@ class _InfoRow extends StatelessWidget {
               Container(
                 width: 36,
                 height: 36,
-                decoration: const BoxDecoration(
-                  color: AppColors.surfaceVariant,
+                decoration: BoxDecoration(
+                  color: context.bgVariant,
                   borderRadius: AppRadius.mdBorder,
                 ),
                 child: Icon(icon, color: AppColors.accent500, size: 18),
@@ -417,7 +417,7 @@ class _InfoRow extends StatelessWidget {
         if (!isLast)
           Divider(
             height: 1,
-            color: AppColors.primary400.withValues(alpha: 0.2),
+            color: context.border,
             indent: AppSpacing.s4,
             endIndent: AppSpacing.s4,
           ),

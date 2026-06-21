@@ -24,13 +24,8 @@ class AppShell extends StatelessWidget {
   Widget _buildBottomNav(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border(
-          top: BorderSide(
-            color: AppColors.primary400.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
+        color: context.bgSurface,
+        border: Border(top: BorderSide(color: context.border, width: 1)),
       ),
       child: SafeArea(
         child: Padding(

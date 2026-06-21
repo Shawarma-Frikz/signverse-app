@@ -23,7 +23,7 @@ class RecentTranslationTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.lgBorder,
-        border: Border.all(color: AppColors.primary400.withValues(alpha: 0.2)),
+        border: Border.all(color: context.border),
       ),
       child: Row(
         children: [

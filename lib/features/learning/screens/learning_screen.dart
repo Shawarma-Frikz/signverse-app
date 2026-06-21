@@ -32,7 +32,7 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
     final query = ref.watch(searchQueryProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.bgPrimary,
       body: Stack(
         children: [
           Positioned(
@@ -439,11 +439,9 @@ class _SignCardState extends State<_SignCard>
             scale: _scale,
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: context.bgSurface,
                 borderRadius: AppRadius.xlBorder,
-                border: Border.all(
-                  color: AppColors.primary400.withValues(alpha: 0.2),
-                ),
+                border: Border.all(color: context.border),
               ),
               child: Stack(
                 children: [
@@ -560,12 +558,12 @@ class _CategoryChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.accent500.withValues(alpha: 0.15)
-              : AppColors.surface,
+              : context.bgSurface,
           borderRadius: AppRadius.fullBorder,
           border: Border.all(
             color: isSelected
                 ? AppColors.accent500.withValues(alpha: 0.5)
-                : AppColors.primary400.withValues(alpha: 0.3),
+                : context.border,
           ),
         ),
         child: Row(

@@ -20,7 +20,7 @@ class StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.s4),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.bgSurface,
         borderRadius: AppRadius.xlBorder,
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
@@ -41,7 +41,7 @@ class StatCard extends StatelessWidget {
             value,
             style: AppTextStyles.displaySmall.copyWith(
               fontSize: 22,
-              color: AppColors.white,
+              color: context.textPrimary, // Semantic color for light/dark mode
             ),
           ),
           const SizedBox(height: AppSpacing.s1),

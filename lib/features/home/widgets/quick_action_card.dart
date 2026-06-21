@@ -61,11 +61,9 @@ class _QuickActionCardState extends State<QuickActionCard>
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.s4),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.bgSurface,
             borderRadius: AppRadius.xlBorder,
-            border: Border.all(
-              color: AppColors.primary400.withValues(alpha: 0.2),
-            ),
+            border: Border.all(color: context.border),
           ),
           child: Row(
             children: [
