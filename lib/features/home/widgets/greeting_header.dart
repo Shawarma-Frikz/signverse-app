@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/user_avatar.dart';
 import '../../settings/screens/profile_screen.dart';
@@ -65,6 +66,7 @@ class GreetingHeader extends ConsumerWidget {
           fallbackLetter: name.isNotEmpty ? name[0] : 'S',
           size: 44,
           showGlow: true,
+          onTap: () => context.push('/profile'),
         ),
       ],
     );

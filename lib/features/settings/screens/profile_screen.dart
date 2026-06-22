@@ -179,6 +179,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
     try {
       await ApiClient.instance.put('/auth/me', data: {'display_name': name});
+      // Reset so the guard re-initialises from fresh profile data
+      _nameCtrl.clear();
       ref.invalidate(profileProvider);
       ref.invalidate(authProvider);
       if (mounted) _showSnack('Name updated!', isSuccess: true);
@@ -200,6 +202,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         '/auth/me',
         data: {'bio': _bioCtrl.text.trim()},
       );
+      // Reset so the guard re-initialises from fresh profile data
+      _bioCtrl.clear();
       ref.invalidate(profileProvider);
       if (mounted) _showSnack('Bio updated!', isSuccess: true);
     } catch (_) {
@@ -289,12 +293,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               ),
               error: (e, _) => _buildError(),
               data: (profile) {
-                _nameCtrl.text = _nameCtrl.text.isEmpty
-                    ? profile.displayName ?? ''
-                    : _nameCtrl.text;
-                _bioCtrl.text = _bioCtrl.text.isEmpty
-                    ? profile.bio ?? ''
-                    : _bioCtrl.text;
+                // Only initialise from profile when the controller is empty
+                // (i.e. freshly loaded or after a save+clear)
+                if (_nameCtrl.text.isEmpty) {
+                  _nameCtrl.text = profile.displayName ?? '';
+                }
+                if (_bioCtrl.text.isEmpty) {
+                  _bioCtrl.text = profile.bio ?? '';
+                }
                 return _buildProfile(profile);
               },
             ),
