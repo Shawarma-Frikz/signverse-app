@@ -378,17 +378,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             const SizedBox(height: AppSpacing.s5),
 
             // Forgot current password link
-            Center(
-              child: TextButton(
-                onPressed: () => context.push('/forgot-password'),
-                child: Text(
-                  "Forgot your current password?",
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: context.textMuted,
-                  ),
-                ),
-              ),
-            ).animate().fadeIn(delay: 350.ms),
           ],
         ),
       ),

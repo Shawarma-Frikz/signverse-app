@@ -273,50 +273,41 @@ class _SplashScreenState extends State<SplashScreen>
 
   Widget _buildHexLogo() {
     return SizedBox(
-      width: 120,
-      height: 120,
+      width: 140,
+      height: 140,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Outer hex ring
-          CustomPaint(
-            size: const Size(120, 120),
-            painter: _HexPainter(
-              color: AppColors.accent500.withValues(alpha: 0.15),
-              strokeColor: AppColors.accent500.withValues(alpha: 0.4),
-              strokeWidth: 1.5,
-            ),
-          ),
-
-          // Inner hex filled
-          CustomPaint(
-            size: const Size(80, 80),
-            painter: _HexPainter(
-              color: AppColors.accent500.withValues(alpha: 0.1),
-              strokeColor: AppColors.accent500,
-              strokeWidth: 2,
-            ),
-          ),
-
-          // Hand emoji / icon
+          // Glow ring behind logo
           AnimatedBuilder(
             animation: _glowPulse,
-            builder: (context, child) {
-              return Text(
-                '🤟',
-                style: TextStyle(
-                  fontSize: 36,
-                  shadows: [
-                    Shadow(
-                      color: AppColors.accent500.withValues(
-                        alpha: _glowPulse.value,
-                      ),
-                      blurRadius: 20,
+            builder: (_, __) => Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.accent500.withOpacity(
+                      _glowPulse.value * 0.4,
                     ),
-                  ],
-                ),
-              );
-            },
+                    blurRadius: 40,
+                    spreadRadius: 10,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Actual logo
+          ClipRRect(
+            borderRadius: AppRadius.xl2Border,
+            child: Image.asset(
+              'assets/images/logo.png',
+              width: 120,
+              height: 120,
+              fit: BoxFit.cover,
+            ),
           ),
         ],
       ),

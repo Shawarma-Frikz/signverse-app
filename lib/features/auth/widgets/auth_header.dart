@@ -15,16 +15,13 @@ class AuthHeader extends StatelessWidget {
         // Logo
         Row(
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                gradient: AppGradients.accent,
-                borderRadius: AppRadius.mdBorder,
-                boxShadow: AppShadows.glowCyan,
-              ),
-              child: const Center(
-                child: Text('🤟', style: TextStyle(fontSize: 18)),
+            ClipRRect(
+              borderRadius: AppRadius.mdBorder,
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: 36,
+                height: 36,
+                fit: BoxFit.cover,
               ),
             ),
             const SizedBox(width: AppSpacing.s3),
@@ -34,7 +31,7 @@ class AuthHeader extends StatelessWidget {
                   TextSpan(
                     text: 'Sign',
                     style: AppTextStyles.headlineLarge.copyWith(
-                      color: AppColors.white,
+                      color: context.textPrimary,
                     ),
                   ),
                   TextSpan(

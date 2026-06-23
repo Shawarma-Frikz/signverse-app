@@ -27,6 +27,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         'Instant recognition',
         'Text & speech output',
       ],
+      useLogoAsIcon: true, // ← use the real logo on page 1
     ),
     _OnboardingPage(
       emoji: '📚',
@@ -222,6 +223,7 @@ class _OnboardingPage {
   final String subtitle;
   final Color accentColor;
   final List<String> features;
+  final bool useLogoAsIcon; // ← added
 
   const _OnboardingPage({
     required this.emoji,
@@ -229,6 +231,7 @@ class _OnboardingPage {
     required this.subtitle,
     required this.accentColor,
     required this.features,
+    this.useLogoAsIcon = false, // ← default false
   });
 }
 
@@ -320,10 +323,17 @@ class _OnboardingPageViewState extends State<_OnboardingPageView>
                 ],
               ),
               child: Center(
-                child: Text(
-                  widget.page.emoji,
-                  style: const TextStyle(fontSize: 72),
-                ),
+                child: widget.page.useLogoAsIcon
+                    ? Image.asset(
+                        'assets/images/logo.png',
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.contain,
+                      )
+                    : Text(
+                        widget.page.emoji,
+                        style: const TextStyle(fontSize: 72),
+                      ),
               ),
             ),
           ),
