@@ -565,6 +565,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ),
 
         // ── Bio section ────────────────────────────────────────
+        // ── Bio section ────────────────────────────────────────────────
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
@@ -576,64 +577,158 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Header row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Bio', style: AppTextStyles.headlineMedium),
-                    if (!_isEditingBio)
-                      TextButton.icon(
-                        onPressed: () => setState(() => _isEditingBio = true),
-                        icon: const Icon(
-                          Icons.edit_rounded,
-                          size: 14,
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.person_outline_rounded,
                           color: AppColors.accent500,
+                          size: 18,
                         ),
-                        label: Text(
-                          'Edit',
-                          style: AppTextStyles.labelMedium.copyWith(
-                            color: AppColors.accent500,
+                        const SizedBox(width: AppSpacing.s2),
+                        Text('Bio', style: AppTextStyles.headlineMedium),
+                      ],
+                    ),
+                    if (!_isEditingBio)
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          setState(() => _isEditingBio = true);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.s3,
+                            vertical: AppSpacing.s1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.accent500.withOpacity(0.1),
+                            borderRadius: AppRadius.fullBorder,
+                            border: Border.all(
+                              color: AppColors.accent500.withOpacity(0.3),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.edit_rounded,
+                                color: AppColors.accent500,
+                                size: 12,
+                              ),
+                              const SizedBox(width: AppSpacing.s1),
+                              Text(
+                                'Edit',
+                                style: AppTextStyles.labelSmall.copyWith(
+                                  color: AppColors.accent500,
+                                  letterSpacing: 0,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        style: TextButton.styleFrom(padding: EdgeInsets.zero),
                       ),
                   ],
                 ),
+
                 const SizedBox(height: AppSpacing.s3),
 
-                _isEditingBio
-                    ? _EditField(
-                        controller: _bioCtrl,
-                        hint: 'Tell us about yourself...',
-                        maxLines: 4,
-                        onSave: _saveBio,
-                        onCancel: () => setState(() => _isEditingBio = false),
-                      )
-                    : GestureDetector(
-                        onTap: () => setState(() => _isEditingBio = true),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(AppSpacing.s4),
-                          decoration: BoxDecoration(
-                            color: context.bgSurface,
-                            borderRadius: AppRadius.lgBorder,
-                            border: Border.all(color: context.border),
-                          ),
-                          child: profile.bio?.isNotEmpty == true
-                              ? Text(
-                                  profile.bio!,
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    height: 1.6,
-                                  ),
-                                )
-                              : Text(
-                                  'Tap to add a bio...',
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    color: context.textMuted,
-                                    fontStyle: FontStyle.italic,
-                                  ),
+                // ── Always-visible bio display ──────────────────────────
+                if (!_isEditingBio)
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: profile.bio != null && profile.bio!.trim().isNotEmpty
+                        ? Container(
+                            key: const ValueKey('bio_content'),
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(AppSpacing.s4),
+                            decoration: BoxDecoration(
+                              color: context.bgSurface,
+                              borderRadius: AppRadius.lgBorder,
+                              border: Border.all(color: context.border),
+                            ),
+                            child: Text(
+                              profile.bio!.trim(),
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                height: 1.7,
+                                color: context.textPrimary,
+                              ),
+                            ),
+                          )
+                        : GestureDetector(
+                            key: const ValueKey('bio_empty'),
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              setState(() => _isEditingBio = true);
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(AppSpacing.s4),
+                              decoration: BoxDecoration(
+                                color: context.bgSurface,
+                                borderRadius: AppRadius.lgBorder,
+                                border: Border.all(
+                                  color: AppColors.accent500.withOpacity(0.15),
+                                  // dashed effect via strokeAlign
                                 ),
-                        ),
-                      ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.accent500.withOpacity(
+                                        0.08,
+                                      ),
+                                      borderRadius: AppRadius.mdBorder,
+                                    ),
+                                    child: const Icon(
+                                      Icons.add_rounded,
+                                      color: AppColors.accent500,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.s3),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Add a bio',
+                                        style: AppTextStyles.labelLarge
+                                            .copyWith(
+                                              color: AppColors.accent400,
+                                              fontSize: 14,
+                                            ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Tell people a bit about yourself',
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: context.textMuted,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                  ),
+
+                // ── Edit form ───────────────────────────────────────────
+                if (_isEditingBio)
+                  _EditField(
+                    controller: _bioCtrl,
+                    hint: 'Tell us about yourself...',
+                    maxLines: 4,
+                    onSave: _saveBio,
+                    onCancel: () => setState(() => _isEditingBio = false),
+                  ).animate().fadeIn(duration: 200.ms),
               ],
             ).animate().fadeIn(delay: 200.ms),
           ),
