@@ -7,6 +7,8 @@ import '../../../core/services/tts_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
+import '../../../shared/widgets/user_avatar.dart';
+import '../../settings/screens/profile_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -16,6 +18,7 @@ class SettingsScreen extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final user = ref.watch(authProvider).user;
     final notifier = ref.read(settingsProvider.notifier);
+    final profile = ref.watch(profileProvider).valueOrNull;
 
     if (settings.isLoading) {
       return const Scaffold(
@@ -97,25 +100,14 @@ class SettingsScreen extends ConsumerWidget {
                         ),
                         child: Row(
                           children: [
-                            Container(
-                              width: 52,
-                              height: 52,
-                              decoration: const BoxDecoration(
-                                gradient: AppGradients.accent,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Text(
+                            UserAvatar(
+                              avatarUrl: profile?.avatarUrl,
+                              fallbackLetter:
                                   (user?.displayName?.isNotEmpty == true
-                                          ? user!.displayName![0]
-                                          : user?.email[0] ?? 'S')
-                                      .toUpperCase(),
-                                  style: AppTextStyles.displaySmall.copyWith(
-                                    color: AppColors.white,
-                                    fontSize: 22,
-                                  ),
-                                ),
-                              ),
+                                  ? user!.displayName![0]
+                                  : user?.email[0] ?? 'S'),
+                              size: 52,
+                              showGlow: false,
                             ),
                             const SizedBox(width: AppSpacing.s4),
                             Expanded(
