@@ -764,7 +764,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       icon: Icons.lock_outline_rounded,
                       label: 'Change Password',
                       iconColor: AppColors.accent500,
-                      onTap: () => context.push('/forgot-password'),
+                      onTap: () =>
+                          context.push('/change-password'), // ← correct
                     ),
                     _ActionRow(
                       icon: Icons.notifications_outlined,

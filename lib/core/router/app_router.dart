@@ -18,6 +18,7 @@ import '../../features/auth/screens/forgot_password_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/verify_email_screen.dart';
 import '../../features/settings/screens/profile_screen.dart';
+import '../../features/auth/screens/change_password_screen.dart';
 
 // ── Router provider — created once, never recreated ───────────────
 final routerProvider = Provider<GoRouter>((ref) {
@@ -149,6 +150,26 @@ class AppRouter {
                       ),
                   child: child,
                 ),
+          ),
+        ),
+        GoRoute(
+          path: '/change-password',
+          pageBuilder: (_, state) => CustomTransitionPage(
+            key: state.pageKey,
+            child: const ChangePasswordScreen(),
+            transitionsBuilder: (_, animation, __, child) => SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: child,
+            ),
           ),
         ),
 
